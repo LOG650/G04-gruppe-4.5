@@ -48,12 +48,12 @@ Det er derfor et behov for bedre beslutningsgrunnlag i lagerstyring. Ved å anal
 Dette prosjektet gjennomføres som en del av emnet LOG650 ved Høgskolen i Molde. Prosjektet har ingen ekstern sponsor, og arbeidet utføres av studentgruppen som en del av studieprogrammet. Foreleser og veileder fungerer som faglig støtte og godkjenner prosjektets fremdrift og leveranser.
 
 ## Kunde
-(Navn på butikk / virksomhet) representerer sluttbrukeren av prosjektet og fungerer som case-bedrift i studien. Virksomheten har bidratt med relevant informasjon og data knyttet til lager og salg, som danner grunnlaget for analysene i prosjektet.
+Skoringen Råholt representerer sluttbrukeren av prosjektet og fungerer som case-bedrift i studien. Virksomheten har bidratt med relevant informasjon og data knyttet til lager og salg, som danner grunnlaget for analysene i prosjektet.
 
-Kontaktperson hos virksomheten er (navn på kontaktperson / rolle), som fungerer som bindeledd mellom prosjektgruppen og virksomheten ved behov.
+Kontaktperson hos virksomheten er Marit Stoksflod, som fungerer som Daglig leder/butikksjef og bindeledd mellom prosjektgruppen og virksomheten ved behov.
 
 ## Forretningscase
-Prosjektet er begrunnet i behovet for bedre beslutningsgrunnlag innen lagerstyring i detaljhandel. Ved å analysere historiske salgsdata og lagerdata fra (butikkens navn) vil prosjektet undersøke hvordan kvantitative metoder og dataanalyse kan bidra til mer presise prognoser og bedre lagerplanlegging.
+Prosjektet er begrunnet i behovet for bedre beslutningsgrunnlag innen lagerstyring i detaljhandel. Ved å analysere historiske salgsdata og lagerdata fra Skoringen Råholt vil prosjektet undersøke hvordan kvantitative metoder og dataanalyse kan bidra til mer presise prognoser og bedre lagerplanlegging.
 
 ### Alternativer
 *   **Alternativ 1 – Fortsette som i dag (status quo):** Butikken fortsetter å styre lageret basert på erfaring. Krever ingen ekstra analyse, men gir begrensede muligheter for forbedring.
@@ -86,7 +86,7 @@ Verifikasjonen av arbeidet vil bestå av:
 *   Gjennomgang av rapportutkast før endelig levering.
 
 ## Mål
-Prosjektmålet er å analysere salgs- og lagerdata fra (butikkens navn) for å undersøke hvordan kvantitative metoder og dataanalyse kan bidra til bedre lagerstyring og beslutningsgrunnlag.
+Prosjektmålet er å analysere salgs- og lagerdata fra Skoringen Råholt for å undersøke hvordan kvantitative metoder og dataanalyse kan bidra til bedre lagerstyring og beslutningsgrunnlag.
 
 ## Krav
 *   Analysere historiske salgsdata og lagerdata.
