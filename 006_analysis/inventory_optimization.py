@@ -30,13 +30,16 @@ def run_optimization():
 
     history = {'Naive': [], 'Optimized': []}
     costs = {'Naive': 0, 'Optimized': 0}
+    capacity_hits = {'Naive': 0, 'Optimized': 0}
     
     # --- SIMULERING NAIV ---
     inv = INITIAL_INVENTORY
     for date, actual in actual_2025.items():
         order = get_naive_order(date)
         inv += order
-        if inv > MAX_CAPACITY: inv = MAX_CAPACITY
+        if inv > MAX_CAPACITY: 
+            capacity_hits['Naive'] += 1
+            inv = MAX_CAPACITY
         
         sold = min(inv, actual)
         shortage = max(0, actual - inv)
@@ -48,13 +51,13 @@ def run_optimization():
     # --- SIMULERING OPTIMALISERT (SARIMA + Just-in-time) ---
     inv = INITIAL_INVENTORY
     for date, actual in actual_2025.items():
-        # Vi bestiller basert på SARIMA-prognosen
-        # Vi prøver å lande på et sluttsalgslager på 100 par (buffer)
         target_end_inv = 100 
         order = max(0, sarima_forecast.loc[date] + target_end_inv - inv)
         
         inv += order
-        if inv > MAX_CAPACITY: inv = MAX_CAPACITY
+        if inv > MAX_CAPACITY: 
+            capacity_hits['Optimized'] += 1
+            inv = MAX_CAPACITY
         
         sold = min(inv, actual)
         shortage = max(0, actual - inv)
@@ -67,6 +70,12 @@ def run_optimization():
     print(f"Total Kostnad (KI-Optimert - SARIMA): {costs['Optimized']:,.0f} NOK")
     savings = costs['Naive'] - costs['Optimized']
     print(f"Besparelse: {savings:,.0f} NOK ({savings/costs['Naive']*100:.1f}%)")
+    print(f"Antall måneder med fullt lager (Kapasitetsmangel):")
+    print(f"  Naiv strategi: {capacity_hits['Naive']} mnd")
+    print(f"  Optimert strategi: {capacity_hits['Optimized']} mnd")
+    print(f"Maksimal lagerbeholdning:")
+    print(f"  Naiv strategi: {max(history['Naive']):.0f} par")
+    print(f"  Optimert strategi: {max(history['Optimized']):.0f} par")
 
     # Visualisering
     plt.figure(figsize=(12, 6))
