@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<title>Møtereferat — søndag 26. april 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --muted: #555;
+    --accent: #1f4e79;
+    --rule: #d8d8d8;
+    --table-stripe: #f7f5f0;
+    --quote: #f0f3f7;
+  }
+  @page { size: A4; margin: 18mm 16mm; }
+  html { font-size: 11pt; }
+  body {
+    font-family: "Charter", "Source Serif Pro", Georgia, "Times New Roman", serif;
+    color: var(--ink);
+    line-height: 1.55;
+    margin: 0;
+    padding: 0;
+  }
+  main {
+    max-width: 820px;
+    margin: 1.5rem auto 3rem;
+    padding: 0 1rem;
+  }
+  h1, h2, h3 {
+    font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+    color: var(--accent);
+    line-height: 1.25;
+  }
+  h1 { font-size: 1.8rem; margin-top: 0; border-bottom: 2px solid var(--accent); padding-bottom: .35rem; }
+  h2 { font-size: 1.3rem; margin-top: 1.8rem; border-bottom: 1px solid var(--rule); padding-bottom: .2rem; page-break-after: avoid; }
+  h3 { font-size: 1.05rem; margin-top: 1.2rem; page-break-after: avoid; }
+  p { margin: .55rem 0; }
+  ul, ol { padding-left: 1.4rem; margin: .4rem 0; }
+  li { margin: .15rem 0; }
+  hr { border: none; border-top: 1px solid var(--rule); margin: 1.6rem 0; }
+  blockquote {
+    background: var(--quote);
+    border-left: 4px solid var(--accent);
+    padding: .6rem 1rem;
+    margin: .8rem 0;
+    font-style: italic;
+  }
+  code {
+    font-family: Consolas, "Liberation Mono", monospace;
+    background: #f4f1ea;
+    padding: 0.05em 0.3em;
+    border-radius: 2px;
+    font-size: .92em;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: .8rem 0;
+    font-size: .95rem;
+    font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid var(--rule);
+    padding: 0.4rem 0.6rem;
+    vertical-align: top;
+    text-align: left;
+  }
+  th {
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+  }
+  tbody tr:nth-child(even) { background: var(--table-stripe); }
+  strong { color: var(--accent); }
+  .banner {
+    background: var(--accent);
+    color: white;
+    padding: .5rem 1.5rem;
+    font-family: "Inter", Arial, sans-serif;
+    font-size: .8rem;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .banner .right { opacity: .85; }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <div>LOG650 — Gruppe 4.5 — Møtereferat</div>
+  <div class="right">Skoringen Råholt</div>
+</div>
+
+<main id="content"></main>
+
+<script type="text/x-markdown" id="md-source">
+# Møtereferat – søndag 26. april 2026
+
+**Tilstede:** Gustavo Alfonso Holmedal, Thuy Thu Thi Tran, Inger Irgesund
+**Møteleder:** Gustavo
+**Referent:** Gustavo
+**Sted/format:** Digitalt
+
+---
+
+## 1. Bakgrunn og hovedidé (kort repetisjon for gruppa)
+
+Oppgaven handler om Skoringen Råholt. Butikken får bare bestille sko **to ganger i året** fra leverandøren. Vi finner ut hvor mye de bør bestille hver gang, slik at de hverken går tom eller sitter igjen med usolgte sko.
+
+Hovedidéen i tre steg:
+
+1. **Spå framtiden** — vi ser på hva som er solgt før og bruker en modell (SARIMA) til å gjette hva som blir solgt neste sesong.
+2. **Bestem mengden** — vi bruker en formel som heter "Newsvendor". Den finner balansen mellom å bestille for lite (tapt salg) og for mye (sko som blir liggende).
+3. **Sjekk pengene** — vi regner ut hvor mye butikken sparer på å bruke vår metode i stedet for det de gjør i dag.
+
+---
+
+## 2. Saker
+
+### Sak 1 – Pensumkompendiet er nå integrert i oppgaven
+Hele LOG650-pensumet (33 seksjoner) er pakket ut og lagt inn i prosjektet under `003_referanser/Kompendium/`. Vi bruker **22 av 33 seksjoner** aktivt i oppgaven. Hver gang oppgaven nevner en metode, viser vi hvilken pensumseksjon det er hentet fra. Det skaper en rød tråd som viser sensor at vi har brukt pensum riktig.
+
+**Eksempler på pensumkobling:**
+- SARIMA-prognosen → pensum **Ch01 §3** (trend og sesong)
+- Newsvendor-formelen → pensum **Ch05 §5**
+- Bullwhip-effekten → pensum **Ch05 §3**
+- EOQ-kritikken → pensum **Ch10 §4**
+
+En oversiktstabell over alle 22 koblingene ligger i §2.5 i hovedrapporten.
+
+### Sak 2 – Mappestrukturen er ryddet
+Vi hadde flere mapper med rotete navn (mellomrom, store/små bokstaver, tomme duplikater). Alt er nå navngitt etter samme mønster (`nnn_navn` med understrek), og tomme placeholdere er fjernet.
+
+| Mappe | Hva ligger der |
+|---|---|
+| `000_templates/` | Maler fra skolen |
+| `001_info/` | Kontaktinfo, bedriftsinfo om Skoringen, beslutningslogg |
+| `002_meetings/` | Møtereferater (denne mappen) |
+| `003_referanser/` | Litteraturliste **og** hele LOG650-pensumet |
+| `004_data/` | PDF-rapporter fra butikken + vaskede CSV-filer |
+| `006_analysis/` | Python-kode (PDF-leser, SARIMA, newsvendor) |
+| `011_proposal/` | Prosjektforslaget |
+| `012_plan/` | Prosjektplan, risiko, interessenter |
+| `013_gjennomforing/` | Brukermanual, valideringsrapport, alle figurer |
+| `014_report/` | **Selve bacheloroppgaven** |
+
+### Sak 3 – Resultater så langt (på 2025-data)
+
+| Hva | Tall |
+|---|---|
+| Treff på prognosen | **15,8 % bedre** enn dagens metode |
+| Anbefalt vårbestilling 2025 | 6 030 par sko |
+| Anbefalt høstbestilling 2025 | 3 568 par sko |
+| Estimert ekstra fortjeneste pr år | **+713 621 NOK (+14,4 %)** |
+
+### Sak 4 – Slik leser dere rapporten
+Det ligger nå to versjoner av rapporten i `014_report/`:
+
+1. **Vanlig tekst:** `Bacheloroppgave_Skoringen_KOMPLETT.md` — kan åpnes i hvilken som helst tekstleser, og GitHub viser den direkte.
+2. **Pent formatert:** `Bacheloroppgave_Skoringen_KOMPLETT.html` — dobbeltklikk så åpnes den i nettleseren med formler, tabeller og figurer som ferdig oppgave.
+
+Det viktigste å forstå er **hvorfor** vi gjør tingene, ikke matematikken bak. Hovedlinja er: butikken bestiller blindt → vi gir dem en bedre prognose → mindre bom = mer penger og mindre sløsing.
+
+---
+
+## 3. Beslutninger
+- Pensumkompendiet er fast referansegrunnlag og siteres aktivt i alle metodevalg.
+- Mappestruktur frosset på dagens form (`nnn_navn` snake_case). Nye mapper følger samme mønster.
+- Hovedrapporten ligger i `014_report/`. Tidligere versjoner og placeholdere er fjernet.
+- Alt er pushet til GitHub: `github.com/LOG650/G04-gruppe-4.5`.
+
+---
+
+## 4. Oppgaver til neste møte
+| Oppgave | Ansvarlig | Frist |
+|---|---|---|
+| Lese hovedrapporten (HTML-versjonen anbefales) og notere uklare punkter | Thuy + Inger | 2026-04-29 |
+| Komme med innspill på språk og lesbarhet i kapittel 1 og 2 | Thuy | 2026-04-29 |
+| Komme med innspill på diskusjonsdelen (kap. 5) | Inger | 2026-04-29 |
+| Forberede gjennomgang av newsvendor-formelen for gruppa | Gustavo | 2026-04-29 |
+
+---
+
+## 5. Eventuelt
+- De som synes pensum-koblingen er overveldende: dere trenger ikke huske alle 22 seksjonene utenat. Det viktigste er å forstå at vi *bruker* pensum, og hvor i oppgaven det dukker opp. Tabellen i §2.5 er kartet.
+- Spør om hva som helst — vi gjør oss kjent med dette sammen før innleveringen.
+
+---
+
+## 6. Neste møte
+**Dato:** 2026-04-29 (onsdag)
+**Tema:** Statusmøte. Gjennomgå tilbakemeldinger på rapporten og avklare hva som gjenstår før innlevering.
+
+</script>
+
+<script>
+window.addEventListener('load', function () {
+  var sentinel = '@@MARKDOWN' + '_PAYLOAD@@';
+  var src = document.getElementById('md-source').textContent.trim();
+  if (src && src.indexOf(sentinel) === -1) {
+    if (typeof marked.use === 'function') { marked.use({ gfm: true, breaks: false }); }
+    document.getElementById('content').innerHTML = marked.parse(src);
+  } else {
+    document.getElementById('content').innerHTML =
+      '<p style="color:#b00">Markdown-innhold ble ikke injisert.</p>';
+  }
+});
+</script>
+</body>
+</html>
