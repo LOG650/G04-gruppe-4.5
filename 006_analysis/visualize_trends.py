@@ -9,8 +9,8 @@ plt.rcParams['figure.figsize'] = (12, 6)
 plt.rcParams['font.size'] = 12
 
 def create_visualizations():
-    data_path = "004 data/skoringen_salgsdata_clean.csv"
-    output_dir = "013 fase 3 - gjennomføring/visuals"
+    data_path = "004_data/skoringen_salgsdata_clean.csv"
+    output_dir = "013_gjennomforing/visuals"
     
     # Lag mappen hvis den ikke finnes
     if not os.path.exists(output_dir):

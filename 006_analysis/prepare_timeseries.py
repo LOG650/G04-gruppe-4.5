@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 
 def prepare_timeseries():
-    input_path = "004 data/skoringen_salgsdata_clean.csv"
-    output_path = "004 data/skoringen_sales_timeseries.csv"
+    input_path = "004_data/skoringen_salgsdata_clean.csv"
+    output_path = "004_data/skoringen_sales_timeseries.csv"
     
     df = pd.read_csv(input_path)
     

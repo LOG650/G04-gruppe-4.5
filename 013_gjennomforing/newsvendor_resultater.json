@@ -1,0 +1,58 @@
+{
+  "parametre": {
+    "p": 1200,
+    "w": 600,
+    "s": 400,
+    "kritisk_forhold": 0.75,
+    "z_alpha": 0.6745,
+    "rmse_pr_mnd": 222.22
+  },
+  "sesonger": [
+    {
+      "år": 2025,
+      "sesong": "vår",
+      "mu_sarima": 5663.0,
+      "sigma_sesong": 544.3,
+      "Q_naiv": 5389.0,
+      "Q_newsvendor": 6030.0,
+      "faktisk": 6000.0,
+      "naiv_brutto": 3233400.0,
+      "naiv_tapt_salg": 366600.0,
+      "naiv_overskudd": 0.0,
+      "naiv_mangel": 611.0,
+      "news_brutto": 3594023.0,
+      "news_tapt_salg": 0.0,
+      "news_overskudd": 30.0,
+      "news_mangel": 0.0
+    },
+    {
+      "år": 2025,
+      "sesong": "høst",
+      "mu_sarima": 3201.0,
+      "sigma_sesong": 544.3,
+      "Q_naiv": 4120.0,
+      "Q_newsvendor": 3568.0,
+      "faktisk": 3657.0,
+      "naiv_brutto": 2101600.0,
+      "naiv_tapt_salg": 0.0,
+      "naiv_overskudd": 463.0,
+      "naiv_mangel": 0.0,
+      "news_brutto": 2141099.0,
+      "news_tapt_salg": 53101.0,
+      "news_overskudd": 0.0,
+      "news_mangel": 89.0
+    }
+  ],
+  "år_sum": {
+    "naiv_brutto": 5335000.0,
+    "newsvendor_brutto": 5735122.0,
+    "naiv_tapt_salg": 366600.0,
+    "newsvendor_tapt_salg": 53101.0,
+    "naiv_netto": 4968400.0,
+    "newsvendor_netto": 5682021.0,
+    "gevinst": 713621.0,
+    "gevinst_pst": 14.36,
+    "maks_lager_naiv": 4448.0,
+    "maks_lager_newsvendor": 5089.0
+  }
+}

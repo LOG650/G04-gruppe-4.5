@@ -3,8 +3,8 @@ import os
 import re
 
 def clean_sales_data():
-    file_path = "004 data/skoringen_salgsdata_total.csv"
-    output_path = "004 data/skoringen_salgsdata_clean.csv"
+    file_path = "004_data/skoringen_salgsdata_total.csv"
+    output_path = "004_data/skoringen_salgsdata_clean.csv"
     
     if not os.path.exists(file_path):
         print("Fant ikke rådata-filen.")

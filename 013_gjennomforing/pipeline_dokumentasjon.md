@@ -1,42 +1,67 @@
-# Teknisk Dokumentasjon: Prognose- og Lagerstyringssystem
+# Teknisk dokumentasjon: Prognose- og bestillingssystem
 
-Dette dokumentet beskriver den tekniske implementeringen av systemet utviklet for Skoringen Råholt i forbindelse med bacheloroppgaven i logistikk (LOG650).
+Dette dokumentet beskriver den tekniske implementeringen av modellen utviklet for Skoringen Råholt i forbindelse med bacheloroppgaven i logistikk (LOG650).
 
 ## 1. Systemarkitektur
-Systemet er bygget som en modulær Python-pipeline som består av fire hovedfaser:
-1.  **Data Extraction:** Konvertering av ustrukturerte PDF-dagsrapporter til CSV.
-2.  **Preprocessing:** Rensking, validering og aggregering av salgsdata.
-3.  **Forecasting:** Trening og evaluering av SARIMA- og ETS-modeller.
-4.  **Optimization:** Simulering av lagernivåer basert på Newsvendor-logikk.
+Pipelinen er bygget som modulære Python-skript i `006_analysis/`. De fire fasene er:
+
+1. **PDF-dekoding** – ustrukturerte daglige salgsrapporter konverteres til strukturerte CSV-er.
+2. **Datavasking og aggregering** – returer, uteliggere og frekvenskonvertering.
+3. **Etterspørselsprognose** – SARIMA-, ARIMA- og ETS-modeller med out-of-sample-validering.
+4. **Sesongbestilling** – newsvendor-formel anvendt på sesongprognosene.
 
 ## 2. Modulbeskrivelse
 
-### 2.1 PDF-Dekoding (`pdf_to_csv_decoder.py`)
-Bruker `pdfplumber` for å identifisere tabellstrukturer i Skoringens dagsrapporter. 
-- **Inndata:** PDF-filer fra `004 data/raw_data/`.
-- **Logikk:** Identifiserer kolonner basert på horisontale koordinater. Håndterer linjeskift i varenavn og fjerner tomme rader.
-- **Validering:** Sjekker at summen av linje-elementer stemmer med "Total salg" i bunnen av PDF-en.
+### 2.1 PDF-dekoding (`pdf_to_csv_decoder.py`, `decode_monthly_reports.py`)
+Bruker `pdfplumber` for å trekke ut tabellinformasjon fra Skoringens dagsrapporter.
 
-### 2.2 Datarensing (`clean_sales_data.py` & `prepare_timeseries.py`)
-Transformerer rådata til en stasjonær tidsserie.
-- Fjerner interne overføringer og feilregistreringer.
-- Aggregerer daglige salg til månedlige intervaller ved hjelp av `pandas.resample()`.
-- Utfører sesongmessig dekomponering for å skille ut trend og sesongkomponenter.
+- **Inndata:** PDF-filer i `004_data/` og `004_data/raw_data/`.
+- **Identifikasjon:** Kolonnegrenser bestemmes av x-koordinater. Linjer valideres med regex (`^\d{6}` for varenummer).
+- **Validering:** Sum av linjeelementer kontrolleres mot "Total salg"-feltet i bunnen av PDF-en.
 
-### 2.3 Prognosemotor (`demand_forecasting.py`)
-Kjernen i systemet som benytter `statsmodels` for statistisk analyse.
-- **SARIMA:** Implementert med automatisert parameter-søk (Grid Search).
-- **Validering:** Benytter "Time Series Cross-Validation" for å sikre at modellen ikke overfittes til historiske data.
+### 2.2 Datavasking (`clean_sales_data.py`, `prepare_timeseries.py`)
+- Returer trekkes fra netto-etterspørselen.
+- Uteliggere (Z-score > 3) flagges og inspiseres manuelt før eventuell korrigering.
+- Aggregering fra dagsdata til månedsdata via `pandas.resample('MS')`.
+- Frekvenskonverteringen demper daglig støy og fremhever sesongsignalet.
 
-### 2.4 Lagersimulering (`inventory_optimization.py`)
-Oversetter prognoser til praktisk lagerstyring.
-- Beregner optimalt sikkerhetslager ($SS$) ved formelen: $SS = Z \times \sigma_{forecast} \times \sqrt{L}$.
-- Beregner re-bestillingspunkt og simulerer daglige lagernivåer gjennom et helt år.
+### 2.3 Prognosemodellering (`demand_forecasting.py`)
+- **Treningssett:** 2023-01 til 2024-12 (24 måneder).
+- **Testsett:** 2025-01 til 2025-12 (12 måneder, out-of-sample).
+- **Modeller:** SARIMA(1,1,1)(1,1,1)$_{12}$, ARIMA(1,1,1), ETS additiv, naiv "samme måned i fjor".
+- **Implementering:** `statsmodels.tsa.statespace.SARIMAX` med `enforce_stationarity=False`.
+- **Evaluering:** MAE, RMSE og MAPE på testsettet. Konfidensintervall hentes fra `get_forecast(steps).conf_int()`.
 
-## 3. Teknisk Stack
-- **Språk:** Python 3.10+
-- **Hovedbiblioteker:** 
-  - `pandas` (datamanipulasjon)
-  - `statsmodels` (statistisk modellering)
-  - `pdfplumber` (PDF-parsing)
-  - `matplotlib` / `seaborn` (visualisering)
+### 2.4 Sesongnewsvendor (`sesongnewsvendor.py`)
+Implementerer newsvendor-formelen $Q^* = \mu + z_\alpha \cdot \sigma$ for to sesonger pr år.
+
+- $\mu_i$: sum SARIMA-prognose for sesongmånedene.
+- $\sigma_i = \sigma_{\text{mnd}} \cdot \sqrt{n_i}$, der $\sigma_{\text{mnd}}$ er RMSE på 2025-residualene.
+- Kritisk forhold: $\text{CR} = (p-w)/(p-s)$.
+- Sammenligner mot en naiv strategi der $Q_{\text{naiv}} = $ fjorårets sesongsalg.
+
+Output:
+- Lagerprofiler i `013_gjennomforing/visuals/inventory_newsvendor_2025.png`.
+- Profittkurve i `013_gjennomforing/visuals/newsvendor_profit_curve.png`.
+- Tallresultater i `013_gjennomforing/newsvendor_resultater.json`.
+
+### 2.5 Verifiseringsskript (`verify_numbers.py`)
+Beregner alle nøkkeltall som brukes i rapporten direkte fra rådataene, slik at tabeller og påstander i `Bacheloroppgave_Skoringen_KOMPLETT.md` kan reproduseres.
+
+## 3. Reproduksjon
+```bash
+pip install -r requirements.txt
+python 006_analysis/run_full_pipeline.py        # PDF -> CSV -> SARIMA
+python 006_analysis/sesongnewsvendor.py         # Newsvendor-bestilling
+python 006_analysis/verify_numbers.py           # Verifiser alle tall i rapporten
+```
+
+## 4. Teknisk stack
+- **Språk:** Python 3.10+ (testet med 3.13)
+- **Hovedbiblioteker:**
+  - `pandas` – datamanipulasjon
+  - `statsmodels` – statistisk modellering (SARIMAX, ETSModel, ARIMA)
+  - `scipy` – statistiske fordelinger og kvantiler (newsvendor)
+  - `pdfplumber` – PDF-parsing
+  - `matplotlib`, `seaborn` – visualisering
+  - `scikit-learn` – evalueringsmetrikker (MAE, RMSE)

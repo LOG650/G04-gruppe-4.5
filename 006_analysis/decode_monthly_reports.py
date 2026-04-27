@@ -85,8 +85,8 @@ def decode_monthly_pdf(file_path, year):
     return all_data
 
 def main():
-    data_dir = "004 data"
-    output_file = "004 data/skoringen_monthly_clean.csv"
+    data_dir = "004_data"
+    output_file = "004_data/skoringen_monthly_clean.csv"
     
     reports = [
         ("Manedsrapport2023.pdf", 2023),

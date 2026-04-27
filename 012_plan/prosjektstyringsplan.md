@@ -1,7 +1,8 @@
 # PROSJEKTSTYRINGSPLAN
-**FOR: AI-BASED INVENTORY OPTIMIZATION IN SHOE RETAIL**
+**Sesongbestilling under prognoseusikkerhet – Skoringen Råholt**
 
-**Dato:** 2026-05-31
+**Utarbeidet:** Februar 2026 (siste revisjon april 2026)
+**Leveringsfrist:** 31. mai 2026
 
 **Utarbeidet av:**
 *   **Prosjektleder:** Gustavo Alfonso Holmedal

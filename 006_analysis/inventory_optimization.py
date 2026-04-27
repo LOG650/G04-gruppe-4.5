@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 
 def run_optimization():
     # Last inn prognoser og historiske data (vi trenger 2024 data for Naiv strategi)
-    monthly_df = pd.read_csv("004 data/skoringen_monthly_clean.csv")
+    monthly_df = pd.read_csv("004_data/skoringen_monthly_clean.csv")
     monthly_df['Dato'] = pd.to_datetime(monthly_df['År'].astype(str) + '-' + monthly_df['Måned'].astype(str) + '-01')
     monthly_df = monthly_df.set_index('Dato').sort_index()
     
-    forecast_df = pd.read_csv("004 data/forecast_results.csv", index_col=0)
+    forecast_df = pd.read_csv("004_data/forecast_results.csv", index_col=0)
     forecast_df.index = pd.to_datetime(forecast_df.index)
     
     # Parametere
@@ -85,7 +85,7 @@ def run_optimization():
     plt.ylabel('Antall par på lager')
     plt.legend()
     plt.grid(True)
-    plt.savefig("013 fase 3 - gjennomføring/visuals/inventory_comparison_v2.png")
+    plt.savefig("013_gjennomforing/visuals/inventory_comparison_v2.png")
     
 if __name__ == "__main__":
     run_optimization()

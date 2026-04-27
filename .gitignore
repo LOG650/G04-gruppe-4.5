@@ -1,0 +1,17 @@
+# AI-verktøykonfig (lokale innstillinger, hører ikke til repoet)
+.claude/
+.codex/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

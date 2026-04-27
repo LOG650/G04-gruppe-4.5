@@ -69,8 +69,8 @@ def extract_data_from_pdf(file_path):
     return all_rows
 
 def main():
-    data_dir = "004 data"
-    output_file = "004 data/skoringen_salgsdata_total.csv"
+    data_dir = "004_data"
+    output_file = "004_data/skoringen_salgsdata_total.csv"
     
     all_extracted_data = []
     files = [f for f in os.listdir(data_dir) if f.endswith('.pdf') and not f.startswith('Manedsrapport') and not f.startswith('~$')]

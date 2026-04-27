@@ -7,7 +7,7 @@ from statsmodels.tsa.statespace.sarimax import SARIMAX
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 def run_forecasting():
-    file_path = "004 data/skoringen_monthly_clean.csv"
+    file_path = "004_data/skoringen_monthly_clean.csv"
     df = pd.read_csv(file_path)
     
     # Lag en dato-indeks
@@ -89,6 +89,8 @@ def run_forecasting():
     
     colors = {'ETS': 'red', 'ARIMA': 'green', 'SARIMA': 'orange'}
     for name, pred in results.items():
+        if name not in colors:
+            continue  # hopp over konfidensintervaller og hjelpestrukturer
         plt.plot(test.index, pred, label=f'Prognose {name}', color=colors[name], linestyle='--')
         
     plt.title('Etterspørselsprognose for Skoringen Råholt (Antall par sko)')
@@ -98,17 +100,19 @@ def run_forecasting():
     plt.grid(True)
     
     # Lagre grafen
-    output_img = "013 fase 3 - gjennomføring/visuals/demand_forecast_comparison.png"
+    output_img = "013_gjennomforing/visuals/demand_forecast_comparison.png"
     plt.savefig(output_img)
     print(f"\nGraf lagret i: {output_img}")
     
     # Lagre resultatene til CSV for senere bruk i optimalisering
     test_results = pd.DataFrame({'Faktisk': test})
     for name, pred in results.items():
+        if name not in colors:
+            continue
         test_results[name] = pred
-    
-    test_results.to_csv("004 data/forecast_results.csv")
-    print("Detaljerte resultater lagret i 004 data/forecast_results.csv")
+
+    test_results.to_csv("004_data/forecast_results.csv")
+    print("Detaljerte resultater lagret i 004_data/forecast_results.csv")
 
 if __name__ == "__main__":
     run_forecasting()

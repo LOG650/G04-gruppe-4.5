@@ -1,9 +1,10 @@
 # Prosjektplan – LOG650 Gruppe 4.5
-**Prosjektnavn:** KI-basert inventar og optimalisering i detaljhandel (Skoringen Råholt)
-**Dato:** 2026-05-31
+**Prosjektnavn:** Sesongbestilling under prognoseusikkerhet hos Skoringen Råholt
+**Utarbeidet:** Februar 2026 (siste revisjon april 2026)
+**Leveringsfrist:** 31. mai 2026
 
 ## 1. Prosjektmål og Omfang
-- **Hovedmål:** Analysere salgs- og lager data fra Skoringen Råholt for å undersøke hvordan kvantitative metoder og dataanalyse kan bidra til bedre lagerstyring og beslutningsgrunnlag.
+- **Hovedmål:** Utvikle en kvantitativ modell som kombinerer SARIMA-etterspørselsprognose og newsvendor-logikk for å forbedre Skoringen Råholts sesongbestillinger, gitt bransjebetingelsen om to bestillinger pr år (vår + høst).
 - **Deltakere:** 
     - Gustavo Alfonso Holmedal (Prosjektleder)
     - Inger Irgesund
@@ -38,6 +39,6 @@
 - **Ekspertise:** Veiledning fra Høgskolen i Molde og praktisk innsikt fra butikkens drift.
 
 ## 6. Metodikk og Tekniske Rammer
-- **Analysemodeller:** Testing og sammenligning av ETS, ARIMA og SARIMA for etterspørselsprognoser.
-- **KPI-fokus:** Minimering av totale lagerkostnader (innkjøpskostnader, lagerholdskostnader og eventuelle ombyggingskostnader).
-- **Avgrensninger:** Prosjektet fokuserer kun på produktkategorien "sko" og tar ikke høyde for eksterne faktorer som prisendringer, kampanjer eller forsinkelser i leverandørkjeden.
+- **Analysemodeller:** Testing og sammenligning av ETS, ARIMA og SARIMA for etterspørselsprognoser (pensumets Ch01 §3). Newsvendor-modell (Ch05 §5) for sesongbestilling.
+- **KPI-fokus:** Tapt salg (alternativkostnad), overlager og estimert nettoresultat. Servicenivå styres via det kritiske forholdet $(p-w)/(p-s)$.
+- **Avgrensninger:** Prosjektet fokuserer kun på produktkategorien "sko" som én aggregert SKU og tar ikke høyde for størrelsesfordeling, eksterne faktorer (vær, kampanjer) eller leveringstid. Bestillingsfrekvensen er gitt som to pr år (bransjebetingelse).
