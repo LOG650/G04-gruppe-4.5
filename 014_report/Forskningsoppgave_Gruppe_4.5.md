@@ -1,14 +1,96 @@
-# Sesongbestilling under prognoseusikkerhet
-## En case-studie av Skoringen Råholt med SARIMA-prognose og newsvendor-logikk
+<div class="title-page">
+<div class="tp-section tp-top">
+<span class="institution-line">Høgskolen i Molde</span>
+<span class="institution-sub">Vitenskapelig høgskole i logistikk</span>
+<div class="course-tag">LOG650 — Forskningsprosjekt i logistikk · Vårsemesteret 2026</div>
+</div>
+<div class="tp-section tp-mid">
+<hr class="title-rule">
+<div class="thesis-title">Sesongbestilling under prognoseusikkerhet</div>
+<div class="thesis-subtitle">En case-studie av Skoringen Råholt med SARIMA-prognose og newsvendor-logikk</div>
+<hr class="title-rule">
+</div>
+<div class="tp-section tp-authors">
+<span class="authors-label">Forfattere</span>
+<div class="authors">Gustavo Alfonso Holmedal<br>Thuy Thu Thi Tran<br>Inger Irgesund</div>
+<div class="group-line">Gruppe 4.5</div>
+</div>
+<div class="tp-section tp-footer">
+<span class="footer-meta">Forskningsoppgave <span class="meta-divider">·</span> April 2026</span>
+</div>
+</div>
 
-**LOG650 – Forskningsprosjekt i logistikk**
-**Høgskolen i Molde – Vitenskapelig høgskole i logistikk**
 
-**Dato:** April 2026
-**Gruppe:** 4.5
-**Medlemmer:** Gustavo Alfonso Holmedal, Thuy Thu Thi Tran, Inger Irgesund
+## Innholdsfortegnelse
+
+<style>
+.toc-list { font-family: "Charter", "Source Serif Pro", Georgia, serif; margin: 1rem 0 2rem; }
+.toc-row { display: flex; align-items: baseline; gap: 0.4rem; line-height: 1.55; padding: 0.05rem 0; }
+.toc-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.toc-dots { flex: 1 1 auto; border-bottom: 1px dotted #888; transform: translateY(-4px); min-width: 1.5rem; }
+.toc-page { white-space: nowrap; font-variant-numeric: tabular-nums; min-width: 1.6rem; text-align: right; color: #1a1a1a; }
+.toc-l1 { font-weight: 700; margin-top: 0.55rem; }
+.toc-l1 .toc-page { font-weight: 700; }
+.toc-l2 { padding-left: 2rem; font-weight: 400; color: #333; }
+.toc-l3 { padding-left: 4rem; font-weight: 400; color: #555; font-style: italic; }
+@media print {
+  .toc-row { page-break-inside: avoid; }
+  .toc-dots { border-bottom-color: #555; }
+}
+</style>
+<div class="toc-list">
+<div class="toc-row toc-l1"><span class="toc-text">Sammendrag</span><span class="toc-dots"></span><span class="toc-page">4</span></div>
+<div class="toc-row toc-l1"><span class="toc-text">1. Innledning</span><span class="toc-dots"></span><span class="toc-page">6</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">1.1 Bakgrunn: detaljhandel i en periode med strukturendring</span><span class="toc-dots"></span><span class="toc-page">6</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">1.2 Skobransjen som logistisk kontekst</span><span class="toc-dots"></span><span class="toc-page">6</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">1.3 Casebedriften: Skoringen Råholt</span><span class="toc-dots"></span><span class="toc-page">7</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">1.4 Problemstilling og forskningsspørsmål</span><span class="toc-dots"></span><span class="toc-page">8</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">1.5 Avgrensninger og leveranser</span><span class="toc-dots"></span><span class="toc-page">9</span></div>
+<div class="toc-row toc-l1"><span class="toc-text">2. Teoretisk rammeverk</span><span class="toc-dots"></span><span class="toc-page">10</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">2.1 Lagerstyringens utvikling: Fra EOQ til prognosedrevet bestilling</span><span class="toc-dots"></span><span class="toc-page">10</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">2.2 Tidsserieanalyse og dekomponering av etterspørsel</span><span class="toc-dots"></span><span class="toc-page">11</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">2.3 SARIMA-modellen: Box-Jenkins-metodologien</span><span class="toc-dots"></span><span class="toc-page">12</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">2.4 Newsvendor-modellen: optimal bestilling under usikkerhet</span><span class="toc-dots"></span><span class="toc-page">13</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">2.5 Bullwhip-effekten og forsyningskjedekoordinering</span><span class="toc-dots"></span><span class="toc-page">15</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">2.6 Kobling mellom oppgave og pensumkompendiet</span><span class="toc-dots"></span><span class="toc-page">16</span></div>
+<div class="toc-row toc-l1"><span class="toc-text">3. Metode</span><span class="toc-dots"></span><span class="toc-page">18</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">3.1 Forskningsdesign og vitenskapsteoretisk forankring</span><span class="toc-dots"></span><span class="toc-page">18</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">3.2 Datafangst (FS1): Fra ustrukturerte PDF til strukturert tidsserie</span><span class="toc-dots"></span><span class="toc-page">19</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">3.3 Datavasking og preparering</span><span class="toc-dots"></span><span class="toc-page">20</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">3.4 Modellering og modellvalg (FS2)</span><span class="toc-dots"></span><span class="toc-page">21</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">3.5 Newsvendor-implementering (FS3)</span><span class="toc-dots"></span><span class="toc-page">22</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">3.6 Økonomisk evaluering (FS4)</span><span class="toc-dots"></span><span class="toc-page">24</span></div>
+<div class="toc-row toc-l1"><span class="toc-text">4. Empirisk analyse og resultater</span><span class="toc-dots"></span><span class="toc-page">24</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">4.1 Beskrivende analyse av datasettet (FS1)</span><span class="toc-dots"></span><span class="toc-page">24</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">4.2 Prognosepresisjon (FS2)</span><span class="toc-dots"></span><span class="toc-page">27</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">4.3 Newsvendor-bestilling (FS3)</span><span class="toc-dots"></span><span class="toc-page">29</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">4.4 Økonomisk effekt og lagerprofil (FS4)</span><span class="toc-dots"></span><span class="toc-page">31</span></div>
+<div class="toc-row toc-l1"><span class="toc-text">5. Diskusjon</span><span class="toc-dots"></span><span class="toc-page">34</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">5.1 Informasjon som beslutningsstøtte – ikke som lagererstatning</span><span class="toc-dots"></span><span class="toc-page">34</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">5.2 Bullwhip-effekten og leverandørsamarbeid</span><span class="toc-dots"></span><span class="toc-page">36</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">5.3 Begrensninger og forutsetninger</span><span class="toc-dots"></span><span class="toc-page">36</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">5.4 Bærekraft og samfunnsmessige implikasjoner</span><span class="toc-dots"></span><span class="toc-page">38</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">5.5 Implementering, endringsledelse og organisasjonskultur</span><span class="toc-dots"></span><span class="toc-page">38</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">5.6 Studiens bidrag til faget</span><span class="toc-dots"></span><span class="toc-page">39</span></div>
+<div class="toc-row toc-l1"><span class="toc-text">6. Konklusjon og anbefalinger</span><span class="toc-dots"></span><span class="toc-page">40</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">6.1 Hovedfunn</span><span class="toc-dots"></span><span class="toc-page">40</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">6.2 Svar på forskningsspørsmålene</span><span class="toc-dots"></span><span class="toc-page">40</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">6.3 Anbefalinger til Skoringen Råholt</span><span class="toc-dots"></span><span class="toc-page">41</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">6.4 Videre arbeid</span><span class="toc-dots"></span><span class="toc-page">42</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">6.5 Avsluttende refleksjon</span><span class="toc-dots"></span><span class="toc-page">43</span></div>
+<div class="toc-row toc-l1"><span class="toc-text">7. Referanser</span><span class="toc-dots"></span><span class="toc-page">44</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">Pensum (LOG650-kompendiet)</span><span class="toc-dots"></span><span class="toc-page">44</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">Akademisk litteratur</span><span class="toc-dots"></span><span class="toc-page">45</span></div>
+<div class="toc-row toc-l1"><span class="toc-text">8. Vedlegg</span><span class="toc-dots"></span><span class="toc-page">46</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">Vedlegg A – Variabler og notasjon</span><span class="toc-dots"></span><span class="toc-page">46</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">Vedlegg B – Datasett, kode og artefakter</span><span class="toc-dots"></span><span class="toc-page">47</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">Vedlegg C – Reproduksjon</span><span class="toc-dots"></span><span class="toc-page">49</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">Vedlegg D – Pensumkompendiets struktur</span><span class="toc-dots"></span><span class="toc-page">50</span></div>
+</div>
 
 ---
+
+<div style="page-break-before: always;"></div>
 
 ## Sammendrag
 Norske skobutikker er bundet av leverandørenes produksjons- og bestillingssyklus, og plasserer normalt kun to bestillinger per år: én før vårsesongen og én før høstsesongen. I praksis betyr dette at hvert år har kun to beslutningsøyeblikk hvor butikken må forplikte seg til volumet for de neste seks månedene, ofte med leveringstid på flere uker. Med så få beslutningsøyeblikk blir treffsikkerheten i hver bestilling den dominerende lønnsomhetsdriveren: en bestilling som er for stor binder kapital og gir kostbare nedsalg ved sesongslutt, mens en bestilling som er for liten gir tomme hyller, tapte kunder og varig redusert kundelojalitet i et marked hvor konkurrentene er tilgjengelige innen ti sekunder via mobilen.
@@ -25,56 +107,7 @@ Studien konkluderer med at gevinsten ved å gå fra erfaringsbasert til modellba
 
 ---
 
-## Innholdsfortegnelse
-
-**1. Innledning**
-&nbsp;&nbsp;&nbsp;&nbsp;1.1 Bakgrunn: detaljhandel i en periode med strukturendring
-&nbsp;&nbsp;&nbsp;&nbsp;1.2 Skobransjen som logistisk kontekst
-&nbsp;&nbsp;&nbsp;&nbsp;1.3 Casebedriften: Skoringen Råholt
-&nbsp;&nbsp;&nbsp;&nbsp;1.4 Problemstilling og forskningsspørsmål
-&nbsp;&nbsp;&nbsp;&nbsp;1.5 Avgrensninger og leveranser
-
-**2. Teoretisk rammeverk**
-&nbsp;&nbsp;&nbsp;&nbsp;2.1 Lagerstyringens utvikling: Fra EOQ til prognosedrevet bestilling
-&nbsp;&nbsp;&nbsp;&nbsp;2.2 Tidsserieanalyse og dekomponering av etterspørsel
-&nbsp;&nbsp;&nbsp;&nbsp;2.3 SARIMA-modellen: Box-Jenkins-metodologien
-&nbsp;&nbsp;&nbsp;&nbsp;2.4 Newsvendor-modellen: optimal bestilling under usikkerhet
-&nbsp;&nbsp;&nbsp;&nbsp;2.5 Bullwhip-effekten og forsyningskjedekoordinering
-&nbsp;&nbsp;&nbsp;&nbsp;2.6 Kobling mellom oppgave og pensumkompendiet
-
-**3. Metode**
-&nbsp;&nbsp;&nbsp;&nbsp;3.1 Forskningsdesign og vitenskapsteoretisk forankring
-&nbsp;&nbsp;&nbsp;&nbsp;3.2 Datafangst: Fra ustrukturerte PDF til strukturert tidsserie
-&nbsp;&nbsp;&nbsp;&nbsp;3.3 Datavasking og preparering
-&nbsp;&nbsp;&nbsp;&nbsp;3.4 Modellering og modellvalg
-&nbsp;&nbsp;&nbsp;&nbsp;3.5 Newsvendor-implementering
-&nbsp;&nbsp;&nbsp;&nbsp;3.6 Økonomisk evaluering
-
-**4. Empirisk analyse og resultater**
-&nbsp;&nbsp;&nbsp;&nbsp;4.1 Beskrivende analyse av datasettet
-&nbsp;&nbsp;&nbsp;&nbsp;4.2 Prognosepresisjon
-&nbsp;&nbsp;&nbsp;&nbsp;4.3 Newsvendor-bestilling
-&nbsp;&nbsp;&nbsp;&nbsp;4.4 Økonomisk effekt og lagerprofil
-
-**5. Diskusjon**
-&nbsp;&nbsp;&nbsp;&nbsp;5.1 Informasjon som beslutningsstøtte – ikke som lagererstatning
-&nbsp;&nbsp;&nbsp;&nbsp;5.2 Bullwhip-effekten og leverandørsamarbeid
-&nbsp;&nbsp;&nbsp;&nbsp;5.3 Begrensninger og forutsetninger
-&nbsp;&nbsp;&nbsp;&nbsp;5.4 Bærekraft og samfunnsmessige implikasjoner
-&nbsp;&nbsp;&nbsp;&nbsp;5.5 Implementering, endringsledelse og organisasjonskultur
-&nbsp;&nbsp;&nbsp;&nbsp;5.6 Studiens bidrag til faget
-
-**6. Konklusjon og anbefalinger**
-&nbsp;&nbsp;&nbsp;&nbsp;6.1 Hovedfunn
-&nbsp;&nbsp;&nbsp;&nbsp;6.2 Svar på forskningsspørsmålene
-&nbsp;&nbsp;&nbsp;&nbsp;6.3 Anbefalinger til Skoringen Råholt
-&nbsp;&nbsp;&nbsp;&nbsp;6.4 Videre arbeid
-&nbsp;&nbsp;&nbsp;&nbsp;6.5 Avsluttende refleksjon
-
-**7. Referanser**
-**8. Vedlegg**
-
----
+<div style="page-break-before: always;"></div>
 
 ## 1. Innledning
 
