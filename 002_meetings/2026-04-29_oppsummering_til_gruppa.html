@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
 <meta charset="UTF-8">
-<title>LOG650 — Hva vi har gjort så langt — 29. april 2026</title>
+<title>Oppsummering — onsdag 29. april 2026</title>
 <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
 <style>
   :root {
@@ -92,93 +92,120 @@
 <body>
 
 <div class="banner">
-  <div>LOG650 — Gruppe 4.5 — Oppsummering — 29. april 2026</div>
+  <div>LOG650 — Gruppe 4.5 — Oppsummering</div>
   <div class="right">Skoringen Råholt</div>
 </div>
 
 <main id="content"></main>
 
 <script type="text/x-markdown" id="md-source">
-# LOG650 — Hva vi har gjort så langt
-**Gruppe 4.5 — forskningsoppgave om Skoringen Råholt**
-**Dato:** 29. april 2026
+# Oppsummering — onsdag 29. april 2026
+**Gruppe 4.5 — det vi har gjort med oppgaven i dag**
+
+> Denne oppsummeringen er **kun for det vi har endret i dag**. Hvis dere lurer på hva oppgaven generelt handler om, se gårsdagens oppsummering: `002_meetings/2026-04-27_oppsummering_til_gruppa.md`. Den forklarer prosjektet steg for steg.
+
+Dagens jobb handlet ikke om innholdet i oppgaven, men om hvordan **selve rapporten ser ut når noen åpner den**. Vi har gjort den ryddigere og mer som en ekte bacheloroppgave skal se ut.
 
 ---
 
-## Hva oppgaven handler om — i én setning
-Skoringen Råholt får bare bestille sko **to ganger i året** fra leverandøren. Vi finner ut hvor mye de bør bestille hver gang, slik at de hverken går tom eller sitter igjen med usolgte sko.
+## Steg 1 — Vi byttet navn på rapporten
+
+**Hva vi gjorde:** Hovedrapporten het tidligere `Bacheloroppgave_Skoringen_KOMPLETT`. Vi har døpt den om til `Forskningsoppgave_Gruppe_4.5`.
+
+**Hvorfor:** Kurset vi går heter "LOG650 *Forskningsprosjekt* i logistikk" — så det er mer logisk å kalle leveransen for "Forskningsoppgave" enn "Bacheloroppgave". Navnet stemmer nå med kursnavnet.
+
+**Hva dette betyr for dere:** Når dere åpner repoet, ser dere `Forskningsoppgave_Gruppe_4.5.pdf` i stedet for det gamle navnet. Det er den samme rapporten, bare med nytt navn.
 
 ---
 
-## Hovedidé (forklart enkelt)
+## Steg 2 — Vi laget en skikkelig forside
 
-- **Steg 1 — Spå framtiden:** Vi ser på hva som er solgt før, og bruker en matematisk modell (SARIMA) til å gjette hvor mye som blir solgt neste sesong.
-- **Steg 2 — Bestem mengden:** Vi bruker en formel som heter "Newsvendor". Den finner balansen mellom å bestille for lite (tapt salg) og for mye (sko som blir liggende).
-- **Steg 3 — Sjekk pengene:** Vi regner ut hvor mye butikken sparer eller tjener på å bruke vår metode i stedet for det de gjør i dag.
+**Hva vi gjorde:** Tidligere åpnet rapporten rett på en tekstblokk — det så ut som et utkast. Nå har den en ekte forside med:
 
----
+- "HØGSKOLEN I MOLDE — Vitenskapelig høgskole i logistikk" øverst
+- Tittelen på rapporten i stor blå skrift, sentrert midt på siden
+- Forfatter-navnene under (Gustavo, Thuy, Inger)
+- "Forskningsoppgave · April 2026" nederst
 
-## Resultatene våre (på 2025-data)
+**Hvorfor:** En bacheloroppgave skal ha en ordentlig forside, slik som dere har sett i andre oppgaver. Det er det første sensoren ser, så den må se profesjonell ut.
 
-| Hva | Tall |
-|---|---|
-| Treff på prognosen | **15,8 % bedre** enn dagens metode |
-| Anbefalt vårbestilling 2025 | 6 030 par sko |
-| Anbefalt høstbestilling 2025 | 3 568 par sko |
-| Estimert ekstra fortjeneste pr år | **+713 621 NOK (+14,4 %)** |
+**Hva dette betyr for dere:** Når dere åpner PDF-en, møter dere en pen førsteside. Den ser ut som forsiden på en "ordentlig" akademisk oppgave.
 
 ---
 
-## Sånn er prosjektet bygget opp på GitHub
+## Steg 3 — Vi laget en innholdsfortegnelse med sidetall
 
-Repoet ligger på `github.com/LOG650/G04-gruppe-4.5`. Mappestrukturen er lagt opp slik at navnet forteller hva som er inni:
+**Hva vi gjorde:** Tidligere var innholdsfortegnelsen bare en kort liste uten sidetall. Nå er den en ordentlig innholdsfortegnelse:
 
-| Mappe | Hva ligger der |
-|---|---|
-| `000_templates/` | Maler fra skolen (proposal, APA, prosjektstyringsplan) |
-| `001_info/` | Kontaktinfo, bedriftsinfo om Skoringen, beslutningslogg |
-| `002_meetings/` | Møtereferater + mal til nye referater |
-| `003_referanser/` | Litteraturliste **og** hele LOG650-pensumet (33 seksjoner) |
-| `004_data/` | PDF-rapporter fra butikken + vaskede CSV-filer |
-| `006_analysis/` | Python-kode (PDF-leser, SARIMA, newsvendor) |
-| `011_proposal/` | Prosjektforslaget |
-| `012_plan/` | Prosjektplan, risiko, interessenter, Gantt |
-| `013_gjennomforing/` | Brukermanual, valideringsrapport, alle figurer |
-| `014_report/` | **Selve forskningsoppgaven** (`Forskningsoppgave_Gruppe_4.5.md`) |
+- Hovedkapitlene står i fet skrift
+- Underkapitlene er innrykket
+- Punkter (.....) går fra hver tittel ut til **sidetallet** der avsnittet starter
+- Alle 47 underkapitler er listet
+
+**Hvorfor:** Dere har nok sett dette i ferdige oppgaver — det er sånn en innholdsfortegnelse skal se ut. Slik kan sensor og leser bla rett til riktig side.
+
+**Hva dette betyr for dere:** Hvis dere vil finne f.eks. *"Newsvendor-bestilling"*, slår dere opp i innholdsfortegnelsen, ser at det er på side 28, og blar rett dit.
 
 ---
 
-## Pensumet er aktivt brukt — ikke bare nevnt
+## Steg 4 — Innholdsfortegnelsen kommer FØR sammendraget
 
-Vi har lastet ned hele LOG650-pensumet og lagt det i `003_referanser/Kompendium/`. Hver gang oppgaven bruker en metode, viser vi hvilken pensumseksjon det er hentet fra.
+**Hva vi gjorde:** Vi har flyttet rekkefølgen. Nå er det:
 
-**Eksempler:**
-- SARIMA-prognosen → pensum **Ch01 §3** (trend og sesong)
-- Newsvendor-formelen → pensum **Ch05 §5**
-- Bullwhip-effekten → pensum **Ch05 §3**
-- EOQ-kritikken → pensum **Ch10 §4**
+1. Forside (side 1)
+2. Innholdsfortegnelse (side 2–3)
+3. Sammendrag (side 4)
+4. Selve rapporten (fra side 6 og utover)
 
-Til sammen brukes **22 av 33 pensumseksjoner aktivt** i oppgaven. En oversiktstabell ligger i §2.5 i hovedrapporten.
+**Hvorfor:** Dette er rekkefølgen som er vanlig i norske forskningsoppgaver. Leseren ser hele strukturen først, og kan velge om de vil lese sammendraget eller hoppe rett inn.
 
----
-
-## Vil dere lese rapporten?
-
-1. **Som vanlig tekst:** åpne `014_report/Forskningsoppgave_Gruppe_4.5.md` i en hvilken som helst tekstleser (eller GitHub viser den direkte).
-2. **Som pen, ferdig-formatert side med matematikk og figurer:** dobbeltklikk `014_report/Forskningsoppgave_Gruppe_4.5.html` — den åpnes i nettleseren og ser ut som en ferdig oppgave.
-3. **Som PDF, klar til å sendes/skrives ut:** `014_report/peer_to_peer_2026-04-29/Forskningsoppgave_Gruppe_4.5.pdf`.
+**Hva dette betyr for dere:** Bare en strukturell endring — ingenting nytt å lære, men det ser mer akademisk ut.
 
 ---
 
-## Trenger dere hjelp til å forstå noe?
+## Steg 5 — Hver del av forsiden får sin egen side
 
-Det viktigste å forstå er **hvorfor** vi gjør tingene, ikke nødvendigvis matematikken bak. Hovedlinja er:
+**Hva vi gjorde:** Forsiden, innholdsfortegnelsen, sammendraget og kapittel 1 starter alle på *en helt ny side* nå — ikke midt nede på en side hvor noe annet slutter.
 
-1. Butikken bestiller blindt → de bommer ofte
-2. Vi gir dem en bedre prognose → de bommer mindre
-3. Mindre bom = mer penger og mindre sløsing
+**Hvorfor:** Det ser uprofesjonelt ut når en ny seksjon starter midt på siden. Slik vi har det nå, åpner hver hoveddel rent på en ny side.
 
-Spør meg gjerne hvis det er noe konkret som er uklart — vi gjør oss kjent med dette sammen før innleveringen.
+---
+
+## Steg 6 — Vi har en egen mappe for "i-dag-leveranse"
+
+**Hva vi gjorde:** PDF-en vi leverer i dag ligger nå i en mappe som heter `peer_to_peer_2026-04-29` (datoen for i dag). Selve arbeidsfilen (markdown-versjonen) ligger der den alltid lå.
+
+**Hvorfor:** Tenk dere det slik: Hver gang vi leverer noe til medstudenter, "fryser" vi den versjonen vi leverte. Da er det enkelt å se: *"Dette er det vi sendte 29. april"*. Hvis vi gjør endringer dagen etter, blir ikke filen vi sendte i dag forandret.
+
+**Hvor finner dere PDF-en:** `014_report/peer_to_peer_2026-04-29/Forskningsoppgave_Gruppe_4.5.pdf`
+
+---
+
+## Steg 7 — Hver oppsummering blir nå sin egen fil
+
+**Hva vi gjorde:** Tidligere var det én fil som het `OPPSUMMERING_TIL_GRUPPA.md` som vi fortsatte å oppdatere. Nå har vi datert den:
+
+- `2026-04-27_oppsummering_til_gruppa.md` — den dere fikk forrige gang
+- `2026-04-29_oppsummering_til_gruppa.md` — denne dere leser nå
+
+**Hvorfor:** Slik kan dere alltid se hva vi visste *på den datoen*. Fremtidige oppsummeringer får sin egen fil med sin egen dato. Da ser man tydelig hva som skjedde når.
+
+---
+
+## Hvordan åpne dagens leveranse
+
+For dere som vil se hva som er nytt:
+
+1. **PDF-en (det viktigste):** Dobbeltklikk `014_report/peer_to_peer_2026-04-29/Forskningsoppgave_Gruppe_4.5.pdf`
+2. **Denne oppsummeringen som PDF:** `002_meetings/2026-04-29_oppsummering_til_gruppa.pdf`
+
+---
+
+## Trenger dere hjelp?
+
+Ingen av endringene i dag handler om matematikken eller resultatene — bare om hvordan rapporten *ser ut*. Innholdet er helt det samme som før. Hvis dere vil ha en gjennomgang av selve metodene (SARIMA, newsvendor osv.), så ligger det forklart enkelt i `2026-04-27_oppsummering_til_gruppa.md`.
+
+Spør gjerne hvis noe er uklart.
 
 — Gustavo
 
