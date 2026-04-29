@@ -1,0 +1,820 @@
+# Sesongbestilling under prognoseusikkerhet
+## En case-studie av Skoringen Råholt med SARIMA-prognose og newsvendor-logikk
+
+**LOG650 – Forskningsprosjekt i logistikk**
+**Høgskolen i Molde – Vitenskapelig høgskole i logistikk**
+
+**Dato:** April 2026
+**Gruppe:** 4.5
+**Medlemmer:** Gustavo Alfonso Holmedal, Thuy Thu Thi Tran, Inger Irgesund
+
+---
+
+## Sammendrag
+Norske skobutikker er bundet av leverandørenes produksjons- og bestillingssyklus, og plasserer normalt kun to bestillinger per år: én før vårsesongen og én før høstsesongen. I praksis betyr dette at hvert år har kun to beslutningsøyeblikk hvor butikken må forplikte seg til volumet for de neste seks månedene, ofte med leveringstid på flere uker. Med så få beslutningsøyeblikk blir treffsikkerheten i hver bestilling den dominerende lønnsomhetsdriveren: en bestilling som er for stor binder kapital og gir kostbare nedsalg ved sesongslutt, mens en bestilling som er for liten gir tomme hyller, tapte kunder og varig redusert kundelojalitet i et marked hvor konkurrentene er tilgjengelige innen ti sekunder via mobilen.
+
+Denne oppgaven undersøker hvordan en kombinasjon av Seasonal ARIMA (SARIMA) for etterspørselsprognose, jf. pensumets Ch01 §3 og Hyndman og Athanasopoulos (2021), og newsvendor-modellen for bestillingsmengde, jf. pensumets Ch05 §5 og Petruzzi og Dada (1999), kan forbedre sesongbestillingene hos Skoringen Råholt sammenlignet med dagens praksis. Studien er gjennomført som en kvantitativ casestudie med deduktiv tilnærming, der etablerte modeller fra pensum testes mot reelle salgsdata over treårsperioden 2023–2025.
+
+Vi har bygget en automatisert pipeline i Python som ekstraherer daglige salgsrapporter fra PDF-format ved hjelp av koordinatbasert parsing (`pdfplumber`), aggregerer dataene til månedlige tidsserier og estimerer SARIMA-modeller via et automatisert grid-søk basert på Akaike Information Criterion (AIC). Modellen ble validert mot 2025-data i et out-of-sample design hvor 2025 ikke ble vist for modellen under estimering. På månedsnivå gir SARIMA en gjennomsnittlig prognosefeil (Mean Absolute Error, MAE) på 137 par, en forbedring på 15,8 prosent mot en naiv "samme måned i fjor"-baseline og over 40 prosent mot en sesongløs ARIMA(1,1,1). På årsbasis traff SARIMA-prognosen for 2025 med 2,5 prosent avvik mot faktisk salg, et resultat som ifølge Ramos et al. (2015) plasserer modellen blant de mest presise i sin klasse for detaljhandelsapplikasjoner.
+
+Når vi kobler SARIMA-prognosen til newsvendor-formelen $Q^* = \mu + z_\alpha \cdot \sigma$ med antatte enhetspriser ($p = 1\,200$, $w = 600$, $s = 400$ NOK per par), gir dette et anbefalt sikkerhetslager på 367 par per sesong ved et servicenivå på 75 prosent. Sammenlignet med en naiv strategi som bestiller en mengde tilsvarende fjorårets sesongsalg, reduserer den foreslåtte modellen alternativkostnaden ved tapt salg med 313 499 NOK og øker estimert årlig nettoresultat med 713 621 NOK, tilsvarende en relativ forbedring på 14,4 prosent under 2025-data. Hovedgevinsten kommer fra at modellen fanger den voksende vårsesongen som naiv-strategien systematisk undervurderer, og at den nedjusterer høstbestillingen i tråd med at fjorårets høst inneholdt et engangshopp som ikke er representativt for fremtiden.
+
+Studien konkluderer med at gevinsten ved å gå fra erfaringsbasert til modellbasert sesongbestilling er substansiell og robust, og at den primære veien til ytterligere forbedring går gjennom å redusere prognoseusikkerheten $\sigma$ – ikke gjennom å endre bestillingsfrekvensen, som er bundet av leverandøravtalen. Anbefalingene til Skoringen Råholt omfatter implementering av prognosebasert sesongbestilling, eksplisitt valg av servicenivå basert på faktiske marginalkostnader, deling av rullerende prognoser med leverandøren for å redusere bullwhip-effekten i forsyningskjeden (jf. pensumets Ch05 §3), og systematisk loggføring av avvik mellom prognose og realisert salg som grunnlag for videre modellforbedring.
+
+> **Merknad om tall:** Prognosefeil og årssummer er beregnet fra reelle salgsdata for 2023–2025 levert av Skoringen Råholt. Newsvendor-beregningene bygger på antatte enhetspriser ($p, w, s$) som er eksplisitt markert som *estimat*; en sensitivitetsanalyse i kapittel 4.4 viser at konklusjonen er robust over rimelige variasjoner i disse parameterne. Lagerkapasiteten på 3 000 par er oppgitt av butikken og brukes som referansepunkt i lagerprofilene.
+
+---
+
+## Innholdsfortegnelse
+
+**1. Innledning**
+&nbsp;&nbsp;&nbsp;&nbsp;1.1 Bakgrunn: detaljhandel i en periode med strukturendring
+&nbsp;&nbsp;&nbsp;&nbsp;1.2 Skobransjen som logistisk kontekst
+&nbsp;&nbsp;&nbsp;&nbsp;1.3 Casebedriften: Skoringen Råholt
+&nbsp;&nbsp;&nbsp;&nbsp;1.4 Problemstilling og forskningsspørsmål
+&nbsp;&nbsp;&nbsp;&nbsp;1.5 Avgrensninger og leveranser
+
+**2. Teoretisk rammeverk**
+&nbsp;&nbsp;&nbsp;&nbsp;2.1 Lagerstyringens utvikling: Fra EOQ til prognosedrevet bestilling
+&nbsp;&nbsp;&nbsp;&nbsp;2.2 Tidsserieanalyse og dekomponering av etterspørsel
+&nbsp;&nbsp;&nbsp;&nbsp;2.3 SARIMA-modellen: Box-Jenkins-metodologien
+&nbsp;&nbsp;&nbsp;&nbsp;2.4 Newsvendor-modellen: optimal bestilling under usikkerhet
+&nbsp;&nbsp;&nbsp;&nbsp;2.5 Bullwhip-effekten og forsyningskjedekoordinering
+&nbsp;&nbsp;&nbsp;&nbsp;2.6 Kobling mellom oppgave og pensumkompendiet
+
+**3. Metode**
+&nbsp;&nbsp;&nbsp;&nbsp;3.1 Forskningsdesign og vitenskapsteoretisk forankring
+&nbsp;&nbsp;&nbsp;&nbsp;3.2 Datafangst: Fra ustrukturerte PDF til strukturert tidsserie
+&nbsp;&nbsp;&nbsp;&nbsp;3.3 Datavasking og preparering
+&nbsp;&nbsp;&nbsp;&nbsp;3.4 Modellering og modellvalg
+&nbsp;&nbsp;&nbsp;&nbsp;3.5 Newsvendor-implementering
+&nbsp;&nbsp;&nbsp;&nbsp;3.6 Økonomisk evaluering
+
+**4. Empirisk analyse og resultater**
+&nbsp;&nbsp;&nbsp;&nbsp;4.1 Beskrivende analyse av datasettet
+&nbsp;&nbsp;&nbsp;&nbsp;4.2 Prognosepresisjon
+&nbsp;&nbsp;&nbsp;&nbsp;4.3 Newsvendor-bestilling
+&nbsp;&nbsp;&nbsp;&nbsp;4.4 Økonomisk effekt og lagerprofil
+
+**5. Diskusjon**
+&nbsp;&nbsp;&nbsp;&nbsp;5.1 Informasjon som beslutningsstøtte – ikke som lagererstatning
+&nbsp;&nbsp;&nbsp;&nbsp;5.2 Bullwhip-effekten og leverandørsamarbeid
+&nbsp;&nbsp;&nbsp;&nbsp;5.3 Begrensninger og forutsetninger
+&nbsp;&nbsp;&nbsp;&nbsp;5.4 Bærekraft og samfunnsmessige implikasjoner
+&nbsp;&nbsp;&nbsp;&nbsp;5.5 Implementering, endringsledelse og organisasjonskultur
+&nbsp;&nbsp;&nbsp;&nbsp;5.6 Studiens bidrag til faget
+
+**6. Konklusjon og anbefalinger**
+&nbsp;&nbsp;&nbsp;&nbsp;6.1 Hovedfunn
+&nbsp;&nbsp;&nbsp;&nbsp;6.2 Svar på forskningsspørsmålene
+&nbsp;&nbsp;&nbsp;&nbsp;6.3 Anbefalinger til Skoringen Råholt
+&nbsp;&nbsp;&nbsp;&nbsp;6.4 Videre arbeid
+&nbsp;&nbsp;&nbsp;&nbsp;6.5 Avsluttende refleksjon
+
+**7. Referanser**
+**8. Vedlegg**
+
+---
+
+## 1. Innledning
+
+### 1.1 Bakgrunn: detaljhandel i en periode med strukturendring
+Norsk detaljhandel har de siste tre tiårene gjennomgått tre overlappende strukturendringer. Den første bølgen var konsolideringen av lokale, uavhengige kjøpmenn til store kjeder med felles innkjøpsavtaler og sentralisert markedsføring. Den andre bølgen var etableringen av store kjøpesentre utenfor bykjernene, som flyttet handelen bort fra gateplan og inn under tak. Den tredje bølgen, som vi står midt i nå, er den digitale disrupsjonen: e-handelens fremvekst har ikke bare endret hvor kundene handler, men også hvilke forventninger de har når de først går inn i en fysisk butikk. Dersom en kunde ikke finner riktig sko i riktig størrelse, tar det vedkommende ti sekunder å bestille den samme varen fra en konkurrent på mobilen. Dette stiller skarpere krav til lagerstyringen enn noensinne tidligere.
+
+For en lokal skobutikk som Skoringen Råholt er logistikk derfor ikke en perifer støttefunksjon, men en av de avgjørende driverne for lønnsomhet. Christopher (2016) argumenterer for at logistikk som fagfelt har gått fra å være "fysisk distribusjon" på 1950-tallet til "supply chain management" på 2000-tallet, og videre til "demand-driven supply networks" i den digitale tidsalderen. Det som skiller den siste fasen fra de tidligere er at informasjon og fysisk vareflyt må være tett koblet: prognoser, bestillinger, lagerstyring og logistikkstrømmer må samspille i sanntid. For en mindre detaljist betyr dette at de samme analytiske verktøyene som tidligere var forbeholdt store distribusjonssentre, må kunne anvendes også på butikknivå – og det er nettopp dette sprangrøret denne oppgaven adresserer.
+
+### 1.2 Skobransjen som logistisk kontekst
+Skobransjen har spesielt krevende rammebetingelser sammenlignet med andre detaljhandelssegmenter. Tre faktorer trekker fram:
+
+For det første **størrelsesfordelingen**. En enkelt skomodell finnes typisk i 10–15 ulike størrelser, og hver av disse er en separat lagerføringsenhet (Stock Keeping Unit, SKU). For å betjene markedet på en troverdig måte må butikken ha statistisk dekning av alle relevante størrelser samtidig. En kunde som leter etter størrelse 39 har null tilgjengelighet hvis butikken kun har 42 igjen, uavhengig av hvor mange par som ligger i lager totalt. Dette gjør at presisjonskravene til innkjøpene langt overstiger det vi finner i bransjer hvor produktene er mindre differensiert.
+
+For det andre **sesongstrukturen**. Norsk klima har fire distinkte årstider, hvilket innebærer at en skobutikk i praksis må fornye store deler av sortimentet to ganger per år. Vårkolleksjonen (sandaler, joggesko, lette sko) erstatter vintersortimentet, og høstkolleksjonen (boots, vinterstøvler, vanntette sko) erstatter sommersortimentet. Logistikkutfordringen er ikke bare å få inn de nye varene, men å bli kvitt restene av forrige sesong uten å rasere marginene gjennom drastiske utsalg. Lageret fungerer derfor som et "trekkspill" som må kunne ekspandere og trekke seg sammen raskt – og når dette ikke fungerer, oppstår behovet for ekstern lagerleie.
+
+For det tredje **bestillingsregimet**. Skoringen plasserer kun to bestillinger per år hos sine leverandører. Dette er ikke en intern beslutning fra butikkens side, men en bransjebetingelse drevet av leverandørenes produksjonssyklus, lange ledetider fra produksjon i Asia eller Sør-Europa, og kvantumsrabattstrukturer som gjør sjeldnere og større ordrer billigere per enhet. Pensumets Ch10 §4 (kvantumsrabatt-EOQ) gir det formelle rammeverket for å forstå hvorfor leverandørene tilbyr akkurat denne strukturen: under all-units-rabatt er totalkostnaden per enhet en stykkevis lineær fallende funksjon av ordrestørrelse, og dette skaper et incentiv for begge parter til å samle bestillinger til store, sjeldne sendinger.
+
+Konsekvensen for butikken er at hvert bestillingsøyeblikk i februar og august blir et betydelig økonomisk veddemål med en horisont på seks måneder framover. Velger butikken for store ordrer, sitter de fast med kapital bundet i overlager og må ofte selge varer med 50–70 prosent rabatt mot slutten av sesongen for å få plass til neste kolleksjon. Velger de for små ordrer, oppstår tomme hyller akkurat når trafikken er høyest – noe som i tillegg til umiddelbart tap av salg også svekker butikkens rykte som "stedet hvor du finner det du trenger".
+
+### 1.3 Casebedriften: Skoringen Råholt
+Skoringen Råholt holder til i Eidsvoll kommune, et område som har opplevd betydelig befolkningsvekst de siste tiårene. Veksten skyldes nærhet til Oslo, Oslo Lufthavn Gardermoen og en rekke nye boligfelt langs Mjøsa. Dette gir butikken et solid og voksende kundegrunnlag, men det tiltrekker seg også konkurranse: bare noen kilometer unna ligger Jessheim Storsenter, et av Norges største kjøpesentre, med et omfattende utvalg av kjedebutikker og spesialforretninger som dekker både sko, mote og sportsutstyr. I tillegg konkurrerer butikken mot rene e-handelsaktører med nasjonal rekkevidde og ofte sterkere prismakt.
+
+Som medlem av Skoringen-kjeden nyter butikken godt av sentrale innkjøpsavtaler og felles markedsføring, men den daglige driften og den økonomiske risikoen bæres lokalt av de selvstendige eierne. Dette er en viktig nyanse i forståelsen av oppgavens problemstilling: feil i lagerstyringen hos Skoringen Råholt slår direkte ut på bunnlinjen i en lokal bedrift, ikke på et fjernt konsernregnskap. Daglig leder Marit Stoksflod har stilt komplette salgs- og lagerdata til disposisjon for denne studien, og har bidratt med praktisk innsikt i hvordan dagens bestillingsprosess fungerer.
+
+Butikklokalene inkluderer et dedikert lagerareal i tilknytning til selve butikken, med en samlet kapasitet på omtrent 3 000 par sko. Denne kapasiteten er imidlertid utilstrekkelig i de mest belastede vårmånedene, hvor ny vårkolleksjon må huses samtidig som restene av vintersesongen ennå ikke er solgt unna. Praksisen i dag er at butikken da leier eksternt lager, hvilket fra et logistikkfaglig ståsted representerer en ineffektivitet: ekstern lagring medfører ikke bare direkte leiekostnader, men også betydelig dobbelthåndtering ("double handling") av varene gjennom transport, lagring, sortering og re-transport tilbake til butikken når plass blir ledig. Hvert av disse handlingsleddene koster tid uten å tilføre kunden verdi, og kan fra et Lean-perspektiv klassifiseres som *muda* (sløsing).
+
+Samtidig opplever butikken med jevne mellomrom "utsolgt"-situasjoner i de mest etterspurte modellene og størrelsene i toppmånedene, særlig april/mai (vårtopp) og august/september (høsttopp). Dette indikerer at problemet ikke nødvendigvis er at det totale volumet er for høyt eller for lavt, men at fordelingen og treffsikkerheten i bestillingsbeslutningen er suboptimal.
+
+### 1.4 Problemstilling og forskningsspørsmål
+Med utgangspunkt i bestillingsregimet beskrevet over, ligger optimaliseringen ikke i å øke frekvensen av bestillinger – det er ikke et tilgjengelig handlingsrom innenfor leverandøravtalen – men i å treffe **riktig mengde** ved hver av de to årlige beslutningene. Dette omformulerer problemet til den klassiske *newsvendor-situasjonen* slik den behandles i pensumets Ch05 §5: én bestillingsbeslutning under stokastisk etterspørsel, hvor varen har begrenset levetid (sesongsko mister verdi etter sesongslutt) og hvor restverdien etter sesongen er lavere enn utsalgsprisen.
+
+Newsvendor-modellen forutsetter at vi har et estimat for etterspørselsfordelingen $f_D(d)$ med forventning $\mu$ og standardavvik $\sigma$. For å levere et statistisk forsvarlig estimat trenger vi en prognosemodell som klarer å fange både trend og sesong i salget – og det er her SARIMA kommer inn (pensumets Ch01 §3). Studien knytter altså sammen to pensumsentrale verktøy: SARIMA leverer $\mu$ og $\sigma$ til newsvendor, og newsvendor oversetter disse til en konkret bestillingsanbefaling $Q^*$.
+
+> **Hovedproblemstilling**
+> *"Hvordan kan SARIMA-baserte etterspørselsprognoser kombinert med newsvendor-logikk forbedre Skoringen Råholts sesongbestillinger sammenlignet med dagens praksis basert på fjorårssalg?"*
+
+For å besvare hovedproblemstillingen på en strukturert måte formulerer vi fire forskningsspørsmål, hver med en avgrenset analytisk dimensjon:
+
+- **FS1 (Teknisk):** Hvordan kan ustrukturerte daglige salgsrapporter i PDF-format automatisk transformeres til et pålitelig, reproduserbart datagrunnlag som er egnet for kvantitativ tidsserieanalyse?
+- **FS2 (Statistisk):** Hvilken prognosemodell – naiv baseline, ETS, ARIMA eller SARIMA – gir best treffsikkerhet på Skoringen Råholts månedssalg, og hvor signifikant er forbedringen mot dagens praksis representert ved en "samme måned i fjor"-strategi?
+- **FS3 (Beslutningsteoretisk):** Hva er den optimale sesongbestillingsmengden $Q^*$ etter newsvendor-modellen for vår- og høstsesongen, og hvor sensitiv er løsningen for valg av servicenivå og økonomiske parametere ($p, w, s$)?
+- **FS4 (Økonomisk):** Hvilken estimert årlig effekt på bruttoresultat, tapt salg og overlager har en overgang fra naiv "fjorårssalg-bestilling" til SARIMA-newsvendor-bestilling, og hvor robust er denne effekten under variasjon i de underliggende parameterne?
+
+### 1.5 Avgrensninger og leveranser
+Studien er avgrenset til **produktkategorien sko** behandlet som **én aggregert SKU** hos **én butikk** (Skoringen Råholt). Vi modellerer ikke størrelsesfordeling per modell, leverandørspesifikke leveringstider, valutarisiko, planlagte kampanjer, lokale begivenheter eller værdata. Hver av disse er anerkjent som relevant for en mer presis modell og diskuteres i kapittel 5.3 (begrensninger) og kapittel 6.4 (videre arbeid), med eksplisitt henvisning til pensumkapitlene som ville utgjort det metodiske grunnlaget for utvidelsen.
+
+Studiens leveranser er: (i) en automatisert Python-pipeline som konverterer rådata fra PDF til ferdige bestillingsanbefalinger; (ii) en validert SARIMA-prognosemodell for månedlig skosalg; (iii) en newsvendor-implementering som oversetter prognosene til konkrete sesongbestillinger; (iv) en økonomisk konsekvensanalyse som dokumenterer den estimerte effekten av modellbruken; og (v) anbefalinger for implementering hos Skoringen Råholt. Pipelinen og dokumentasjonen er strukturert slik at den kan reproduseres og videreutvikles av andre studenter eller av butikken selv.
+
+---
+
+## 2. Teoretisk rammeverk
+
+### 2.1 Lagerstyringens utvikling: Fra EOQ til prognosedrevet bestilling
+Lagerstyring som fagdisiplin har sin opprinnelse i Ford Whitman Harris' arbeid fra 1913, hvor han presenterte den såkalte EOQ-formelen (Economic Order Quantity) i artikkelen "How Many Parts to Make at Once". Harris' grunnleggende innsikt var at det finnes en optimal ordremengde som balanserer to motstridende kostnadstyper: faste oppstartskostnader per ordre på den ene siden, og lagerholdskostnader på den andre. Den klassiske EOQ-formelen $Q^* = \sqrt{2DS/H}$, hvor $D$ er årlig etterspørsel, $S$ er bestillingskostnad og $H$ er lagerholdskostnad per enhet, har vært pensum i logistikkstudier i over et hundre år og er fortsatt utgangspunktet for de fleste fremstillinger av lagerstyring.
+
+Modellens styrke er enkelheten; modellens svakhet er antagelsene. EOQ forutsetter blant annet at etterspørselen er konstant og kjent, at leveringstiden er null (eller deterministisk og kjent), at lagerholdskostnaden er en kontinuerlig funksjon av lagernivået, og at det ikke finnes restverdi for usolgte enheter. For Skoringen Råholt er flere av disse forutsetningene grovt brutt: etterspørselen varierer med en faktor på 2,2 over året, restverdien etter sesongen er reell men lavere enn utsalgsprisen, og bestillingsvinduet er bundet til to faste tidspunkter per år. Det betyr at en direkte anvendelse av EOQ ville gi misvisende svar.
+
+Pensumets Ch10 §4 (kvantumsrabatt-EOQ) utvider den klassiske formelen til situasjoner der leverandøren tilbyr volumrabatter. Her erstattes den konstante enhetskostnaden med en stykkevis lineær fallende funksjon av ordrestørrelse, og analysen identifiserer kandidater for $Q^*$ ved hvert prisbrudd. Dette er nyttig for å forstå *hvorfor* leverandørene tilbyr akkurat to bestillinger per år (det er ofte billigere per enhet å samle bestillinger), men selv den utvidede EOQ forutsetter kontinuerlig bestilling – en forutsetning som ikke gjelder her. Pensumets Ch03 §5 (MRP-lotstørrelse) viser at også klassiske produksjonsplanleggingsverktøy som lot-for-lot, EOQ-basert lotsizing og Silver-Meal-heuristikken er utviklet for situasjoner med fleksibel bestillingsfrekvens.
+
+For sesongprodukter med kort livssyklus, hvor det ikke er mulig å etterbestille innenfor sesongen og hvor varen har en lavere restverdi etter sesongslutt, er det riktige rammeverket den såkalte *newsvendor-modellen*. Den ble formalisert i operasjonsanalyselitteraturen i andre halvdel av 1900-tallet, blant annet av Petruzzi og Dada (1999), og er navngitt etter et tankeeksperiment med en avis-selger som hver morgen må bestemme hvor mange aviser hen skal kjøpe inn for å selge i løpet av dagen. Bestiller hen for få, går hen glipp av salg; bestiller hen for mange, sitter hen igjen med usolgte aviser som har minimal verdi etter dagens slutt. Modellen er sentral i pensumets Ch05 §5 og er det formelle rammeverket vi anvender i denne oppgaven.
+
+### 2.2 Tidsserieanalyse og dekomponering av etterspørsel
+Tidsserieanalyse hviler på den grunnleggende antakelsen at et observert salg $Y_t$ ikke er en tilfeldig størrelse, men en sum (eller produkt) av strukturerte komponenter som hver kan modelleres separat. Den klassiske dekomponeringen, som behandles i pensumets Ch01 §3, antar at:
+
+$$Y_t = T_t \cdot S_t \cdot C_t \cdot I_t \quad \text{(multiplikativ modell)}$$
+
+eller alternativt:
+
+$$Y_t = T_t + S_t + C_t + I_t \quad \text{(additiv modell)}$$
+
+der $T_t$ er **trendkomponenten** (langsiktig retning, drevet av strukturelle faktorer som befolkningsvekst, prisutvikling og endring i markedsandel), $S_t$ er **sesongkomponenten** (faste rytmer som gjentar seg innenfor en periodelengde, typisk 12 måneder), $C_t$ er **sykluskomponenten** (svingninger med lengre varighet enn sesongen, ofte knyttet til økonomiske konjunkturer), og $I_t$ er den **irregulære eller stokastiske komponenten** (uforutsigbar støy som modellen ikke kan fange).
+
+Multiplikativ versus additiv dekomponering er et metodevalg som styres av om sesongamplituden vokser med trenden eller ikke. Hvis sesongtoppene blir høyere etter hvert som det generelle salgsnivået stiger, er en multiplikativ modell mer passende. For Skoringen Råholt ser vi at årssalget vokser fra 9 041 par i 2023 til 10 800 par i 2025, samtidig som forholdet mellom høyeste og laveste måned holder seg relativt stabilt – dette er kjennetegnet på en multiplikativ struktur, og det støtter valget av SARIMA på logaritmisk transformerte data eller alternativt en additiv modell på de differensierte dataene.
+
+### 2.3 SARIMA-modellen: Box-Jenkins-metodologien
+Den moderne tidsserieanalysen ble systematisert av Box og Jenkins (Box et al., 2015) i en metodologi som har båret deres navn siden. Box-Jenkins-tilnærmingen består av fire faser: (i) modellidentifikasjon, (ii) parameterestimering, (iii) modellvalidering, og (iv) prognose. Denne strukturen følger vi gjennom hele kapittel 4.
+
+SARIMA-modellen, eller mer formelt $\text{ARIMA}(p, d, q) \times (P, D, Q)_s$, er en utvidelse av ARIMA som håndterer både ikke-sesongmessige og sesongmessige autokorrelasjonsstrukturer. De seks parameterne har følgende fortolkning:
+
+**Ikke-sesongmessige ledd (lavfrekvent dynamikk):**
+- $p$ – orden på det autoregressive (AR) leddet. Modellen ser $p$ måneder tilbake for å predikere dagens verdi som en lineær funksjon av tidligere observasjoner.
+- $d$ – grad av differensiering. $d=1$ betyr at vi modellerer endringer ($Y_t - Y_{t-1}$) i stedet for nivåer, hvilket fjerner trend.
+- $q$ – orden på det glidende gjennomsnitts- (MA) leddet. Modellen tar hensyn til feilene i de $q$ siste prognosene.
+
+**Sesongmessige ledd (høyfrekvent dynamikk knyttet til 12-måneders syklus):**
+- $P$ – orden på sesong-AR. Modellen ser $P$ år tilbake (samme måned).
+- $D$ – grad av sesongdifferensiering. $D=1$ betyr at vi modellerer endringen fra samme måned i fjor ($Y_t - Y_{t-12}$), hvilket fjerner sesongmønsteret.
+- $Q$ – orden på sesong-MA.
+
+Den siste parameteren, $s$, er periodelengden, som for månedsdata med årssesong er $s = 12$.
+
+Sentrale forutsetninger for at SARIMA skal være valid er:
+
+**Stasjonæritet etter differensiering.** En tidsserie er stasjonær hvis dens forventning og varians er konstant over tid. De fleste salgsserier er ikke stasjonære i utgangspunktet, men kan gjøres stasjonære gjennom $d$ og/eller $D$ orden differensiering. Vi tester for stasjonæritet ved hjelp av Augmented Dickey-Fuller-testen (ADF). En lav p-verdi (typisk under 0,05) lar oss forkaste nullhypotesen om enhetsrot og konkludere at serien er stasjonær.
+
+**Hvit støy i residualene.** Etter at modellen er estimert, skal residualene ikke ha gjenværende systematiske mønstre. Dette undersøkes med Ljung-Box-testen, som er en porte-manteau-test for autokorrelasjon i residualene. En p-verdi over 0,05 betyr at vi ikke kan forkaste hypotesen om hvit støy, og at modellen er tilstrekkelig spesifisert.
+
+**Modellvalg.** Når vi har flere kandidatmodeller som alle ser ut til å oppfylle forutsetningene, brukes informasjonskriterier som Akaike Information Criterion (AIC) eller Bayesian Information Criterion (BIC). AIC favoriserer modellforklaring med en straff for kompleksitet, og er den mest brukte kriteriet i praksis fordi den balanserer treffsikkerhet og generaliserbarhet på en måte som reduserer risikoen for *overfitting*. I vår analyse bruker vi automatisert grid-søk over et utvalg parameterkombinasjoner og velger modellen med lavest AIC.
+
+For periodiske salgsdata med stabilt sesongmønster har SARIMA gjentatte ganger blitt vist å være overlegen sesongløs ARIMA og ofte konkurransedyktig med eksponentiell glatting (ETS) og enkle maskinlæringsmodeller. Hyndman og Athanasopoulos (2021) gir en grundig sammenligning, og Ramos et al. (2015) viser eksplisitt på detaljhandelsdata at SARIMA leverer presisjon i samme klasse som komplekse state-space-modeller. For datasett med få observasjoner – typisk under 50 månedspunkter – er de parametriske metodene (SARIMA, ETS) klart å foretrekke fremfor moderne ML-metoder som gradient boosting og nevrale nett, fordi sistnevnte krever store datavolumer for å unngå *overfitting*.
+
+### 2.4 Newsvendor-modellen: optimal bestilling under usikkerhet
+Newsvendor-modellen, slik den fremstår i pensumets Ch05 §5 og hos Petruzzi og Dada (1999), gir den optimale bestillingsmengden $Q^*$ for et engangskjøp under stokastisk etterspørsel. Modellen tar utgangspunkt i at beslutningstakeren står overfor to typer kostnader knyttet til bestillingsbeslutningen:
+
+1. **Underbestillingskostnad ($C_u$):** Tap fra salg man kunne hatt, men ikke kan gjennomføre fordi varen er utsolgt. For Skoringen er dette dekningsbidraget per par, $C_u = p - w$, eventuelt pluss en kostnad for redusert kundelojalitet.
+
+2. **Overbestillingskostnad ($C_o$):** Netto tap per par som blir solgt med rabatt etter sesongen. For Skoringen er dette differansen mellom innkjøpsprisen og restverdien, $C_o = w - s$.
+
+Den optimale strategien minimerer den forventede summen av disse kostnadene, og det kan vises (se for eksempel Silver et al., 2016) at løsningen er:
+
+$$Q^* = F_D^{-1}\left(\frac{C_u}{C_u + C_o}\right) = F_D^{-1}\left(\frac{p - w}{p - s}\right)$$
+
+Brøken $\frac{p-w}{p-s}$ kalles det **kritiske forholdet** (critical ratio, CR) og angir det optimale servicenivået i meningen "sannsynligheten for at lager dekker etterspørsel". Den optimale bestillingen $Q^*$ er kvantilen i etterspørselsfordelingen som svarer til dette servicenivået.
+
+For normalfordelt etterspørsel med forventning $\mu$ og standardavvik $\sigma$ kan kvantilen uttrykkes eksplisitt:
+
+$$Q^* = \mu + z_\alpha \cdot \sigma, \qquad z_\alpha = \Phi^{-1}(\text{CR})$$
+
+der $\Phi^{-1}$ er den inverse standard-normalfordelingen. Leddet $z_\alpha \cdot \sigma$ kalles **sikkerhetslageret** (safety stock) og er det ekstra volumet ut over forventet etterspørsel som butikken bestiller for å absorbere prognoseusikkerheten. Sikkerhetslageret skaleres direkte med standardavviket – jo mer presis prognose, desto mindre sikkerhetslager kreves for samme servicenivå.
+
+Sentrale egenskaper ved newsvendor-løsningen:
+
+- **Asymmetri i risikoen.** Hvis $C_u > C_o$ (utsolgt-situasjon er dyrere enn rabattsalg), trekkes $Q^*$ over $\mu$. Hvis $C_o > C_u$, trekkes $Q^*$ under $\mu$. For Skoringen med $p = 1\,200$, $w = 600$, $s = 400$ er $C_u = 600$ og $C_o = 200$, hvilket gir en moderat skjevhet mot å bestille noe mer enn forventet etterspørsel.
+- **Restverdiens betydning.** Lav restverdi $s$ (sesongsko som må selges med stor rabatt etter sesong) øker $C_o$ og reduserer $\text{CR}$, hvilket trekker $Q^*$ ned mot $\mu$. Høy restverdi (sko som beholder mye av verdien) reduserer "straffen" for overstock og lar butikken trygt bestille større volumer.
+- **Estimat for fordelingen.** I praksis er $f_D(d)$ aldri kjent, kun estimert. Vi bruker SARIMA-prognosen som $\mu$ og prognoseens RMSE som proxy for $\sigma$. Dette er en standard og pragmatisk tilnærming, men det er verdt å være eksplisitt om at $\sigma$ inneholder både den underliggende etterspørselsvariasjonen og prognoseusikkerheten.
+
+Modellen kan utvides på flere måter relevant for vår sak. Petruzzi og Dada (1999) drøfter pris-koblede utvidelser hvor pris og bestilling optimeres samtidig. Pensumets Ch05 §5 dekker også *revenue sharing*-kontrakter hvor leverandøren tar tilbake usolgte enheter mot delvis kreditt – dette endrer effektivt $s$ og kan øke $Q^*$ betydelig. Disse utvidelsene er anbefalt som videre arbeid (kapittel 6.4).
+
+### 2.5 Bullwhip-effekten og forsyningskjedekoordinering
+Bullwhip-effekten ble først beskrevet av Jay Forrester (1961) i hans grunnleggende arbeid om industriell dynamikk, og senere navngitt og kvantifisert av Lee, Padmanabhan og Whang (1997). Effekten beskriver hvordan små svingninger i sluttkundens etterspørsel forsterkes oppover i forsyningskjeden – fra detaljist til grossist til distribusjonssenter til produsent – slik at produsenten ser langt mer volatile etterspørselsmønstre enn det som faktisk skjer i butikkene. Lee et al. identifiserer fire hovedårsaker til effekten: (i) etterspørselsignal-prosessering der hver aktør oppdaterer sine prognoser basert på begrenset informasjon, (ii) ordre-batching for å spare transport- og bestillingskostnader, (iii) prisfluktasjon som skaper kjøpsspekulasjon, og (iv) rasjonering og kø-spill ved underforsyning.
+
+Pensumets Ch05 §3 (bullwhip-simulering) kvantifiserer effekten gjennom varians-forsterkningsforholdet: forholdet mellom variansen i ordrene som plasseres oppover i kjeden og variansen i den faktiske sluttkundeetterspørselen. Dette forholdet er typisk 2–4 ganger gjennom hver enkelt ledd, hvilket betyr at en produsent kan oppleve 16–256 ganger mer volatile bestillingsmønstre enn det som faktisk skjer i butikken. Konsekvensene er omfattende: høyere sikkerhetslager i hvert ledd, lavere kapasitetsutnyttelse hos produsenten, høyere produksjonskostnader per enhet, og dårligere servicegrad mot sluttkunden.
+
+For Skoringen Råholt er dette direkte relevant. Når butikken plasserer to store sesongbestillinger per år basert på erfaringsbasert vurdering, sender de et meget volatilt signal til leverandøren. Leverandøren ser ikke det jevne underliggende salget på 800–1 000 par per måned; de ser to "spikes" på 4 000–6 000 par hver. Pensumets Ch05 §4 (multi-echelon Clark-Scarf) formaliserer hvordan slike informasjonsasymmetrier kan reduseres gjennom basisvarer-policyer mellom ledd, og litteraturen om Vendor Managed Inventory (VMI) hos Christopher (2016) viser tilsvarende at deling av kvalitative prognoser mellom detaljist og leverandør kan redusere total varianseksponering for begge parter. Vi diskuterer praktiske implikasjoner for Skoringens leverandørforhold i kapittel 5.2.
+
+### 2.6 Kobling mellom oppgave og pensumkompendiet
+LOG650-kompendiet består av 33 seksjoner organisert som selvstendige Python-prosjekter (`003_referanser/Kompendium/<chXX-secYY-...>/`). Vi anvender 22 av dem aktivt i denne oppgaven – som teorigrunnlag, som referansepipeline for vår implementasjon, eller som rammeverk for sensitivitet og videre arbeid. Tabellen under sammenstiller koblingen.
+
+**Kjernepensum, sitert direkte i argumentasjonen:**
+
+| Seksjon | Hvor brukt | Funksjon |
+|---|---|---|
+| Ch01 §3 (trend-og-sesong) | §2.2, §3.4, §4.2 | SARIMA-pipeline (datainnsamling → diagnostikk → prognose) |
+| Ch05 §5 (newsvendor-kontrakter) | §2.3, §3.5, §4.3 | Kritisk forhold $(p-w)/(p-s)$ og $Q^*$-formulering |
+| Ch05 §3 (bullwhip-simulering) | §2.4, §5.2 | Kvantifisering av varians-forsterkning oppstrøms |
+| Ch10 §4 (kvantumsrabatt) | §2.1, §3.6 | Utvidelse av klassisk EOQ; kontekst for to-bestillingsregimet |
+
+**Pensum brukt for utvidelser, sensitivitet og videre arbeid:**
+
+| Seksjon | Hvor brukt | Funksjon |
+|---|---|---|
+| Ch01 §4 (eksterne-faktorer / ARIMAX) | §5.3, §6.4 | Eksogene regressorer (vær, kampanjer) som videre modell |
+| Ch01 §5 (mange-variabler / LightGBM) | §3.4, §6.4 | Vurdert som ML-alternativ; forkastet for dette datavolumet ($n=24$ treningspunkter) |
+| Ch02 §3 (multi-produkt Q,R) | §3.5, §5.3 | Ramme for SKU/størrelsesutvidelse av newsvendor |
+| Ch02 §4 (flerlokasjon stokastisk) | §1.4, §5.3, §6.4 | Butikk + eksternt lager som to lokasjoner under usikkerhet |
+| Ch02 §5 (ML-klassifisering) | §6.4 | ABC/XYZ-klassifisering som forarbeid til SKU-modell |
+| Ch03 §5 (MRP-lotstørrelse) | §2.1, §5.5 | JIT vs. batching innenfor to-bestillingsregimet |
+| Ch04 §3 (fasilitetsplassering UFLP) | §1.4, §5.1 | Teoretisk grunnlag for "trenger det eksterne lageret eksistere?" |
+| Ch05 §4 (multi-echelon Clark-Scarf) | §5.2 | Koordinering med leverandør gjennom delte prognoser |
+| Ch07 §3 (slotting / class-based storage) | §5.1 | Hvordan utnytte frigjort kapasitet i butikklager |
+| Ch07 §5 (integrert lagerplanlegging) | §5.1 | Informasjon som beslutningsstøtte i lagerstyring |
+| Ch08 §5 (grønn forsyningskjede) | §5.4 | Bærekraftsmål 12 og redusert overproduksjon |
+| Ch09 §3 (revers-nettverk) | §3.3 | Konseptuelt grunnlag for retur-aggregering |
+| Ch09 §4 (Weibull-retur) | §3.3 | Begrunnelse for å behandle returer som negative salg fremfor egen tidsserie |
+| Ch09 §5 (disposisjon-tre) | §2.3, §6.4 | Kvantifisering av $C_o$ (ukurans) i sesongvarer |
+| Ch10 §3 (leverandørvalg AHP+TOPSIS) | §5.5, §6.4 | Rammeverk for å vurdere alternative leverandører med kortere ledetid |
+| Ch11 §3 (Monte Carlo-risk) | §4.4.1, §6.4 | Sensitivitetsanalyse av prisparametere |
+| Ch11 §4 (robust optimization) | §6.4 | Minimax regret-strategi når SARIMA-prognose har høy varians |
+| Ch11 §5 (stresstest) | §6.4 | Modellens robusthet under sjokk (lockdown, leverandørbrudd) |
+
+Resterende 11 seksjoner (produksjonssekvensering Ch03 §3–§4, kjøretøyruting Ch04 §4–§5, kømodeller Ch06 §3–§5, plukkruter Ch07 §4, green-VRP Ch08 §3, binpacking Ch08 §4, innkjøpsauksjon Ch10 §5) er vurdert, men bevisst utelatt fordi de behandler problemstillinger som ikke gjør seg gjeldende i caset (én skobutikk med fast leverandøravtale via Skoringen-kjeden, ingen egen produksjon, ingen egen kjøretøypark, lite lager uten plukksoner).
+
+---
+
+## 3. Metode
+
+### 3.1 Forskningsdesign og vitenskapsteoretisk forankring
+Studien er gjennomført som en **kvantitativ casestudie** med en **deduktiv** tilnærming. Casestudien som design er valgt fordi vi ønsker å undersøke et komplekst og kontekstavhengig fenomen – sesongbestilling i en konkret detaljhandelsbedrift – i sin naturlige sammenheng (Yin, 2018, sitert i Christopher, 2016). Den deduktive tilnærmingen innebærer at vi tar utgangspunkt i etablerte teorier fra pensum (SARIMA, newsvendor, bullwhip) og tester deres empiriske gyldighet og forretningsmessige relevans i et konkret case. Dette står i motsetning til en induktiv tilnærming, hvor man bygger ny teori fra observasjoner.
+
+Den vitenskapsteoretiske posisjonen er moderat positivistisk: vi antar at det eksisterer objektive sammenhenger mellom etterspørsel, bestillingsbeslutning og økonomisk resultat, og at disse kan måles og modelleres med kvantitative metoder. Samtidig anerkjenner vi at modellering alltid involverer forenklinger og forutsetninger, og at den endelige beslutningstakeren – daglig leder – også skal trekke på kvalitativ kunnskap som modellen ikke fanger.
+
+**Forskningskvalitet** vurderes typisk langs fire dimensjoner:
+
+- **Begrepsvaliditet** dreier seg om at vi måler det vi tror vi måler. I vår studie operasjonaliseres "etterspørsel" som registrerte salg (etter retur), og "økonomisk effekt" som differansen mellom realisert bruttoresultat under to bestillingsstrategier. Begge er rimelige operasjonaliseringer, men begrepsvaliditeten reduseres av at vi bruker antatte enhetspriser i stedet for faktiske transaksjonsdata.
+- **Intern validitet** styrkes av at vi har full kontroll over datakvalitet, modellestimering og evalueringsdesign. Out-of-sample-testing (kapittel 3.4) er en standard metode for å motvirke optimisme-skjevhet i prognosevurderingen.
+- **Ekstern validitet** (generalisering) er begrenset. Funnene gjelder strengt tatt bare for Skoringen Råholt under 2023–2025-data. For å generalisere til andre butikker eller andre bransjer kreves replikasjon og sammenligning på tvers av case.
+- **Reliabilitet** sikres gjennom at hele pipelinen er kodet i Python, versjonskontrollert med Git, og dokumentert slik at en annen forsker kan reprodusere resultatene fra rådata til ferdig anbefaling. All kode ligger i `006_analysis/`, og alle verifiserte tall kan reproduseres ved å kjøre `verify_numbers.py`.
+
+### 3.2 Datafangst (FS1): Fra ustrukturerte PDF til strukturert tidsserie
+Et av de mest påtrengende praktiske problemene i moderne mikrologistikk er at små bedrifter ofte har solid datafangst i kassesystemet, men at dataene er låst i formater som ikke er maskinlesbare. Skoringen Råholt sitter på årsverk med detaljert salgsdata, men disse er lagret som dagsrapporter i PDF-format. Hver dagsrapport er en utskrift av kassens "Z-rapport" og inneholder hver enkelt transaksjon med varekode, beløp, antall og rabattinformasjon.
+
+PDF som format er det vi i logistikkterminologi kan kalle et "visningsformat": filen inneholder presise instruksjoner om hvor på siden hvert tegn skal tegnes, men har ingen forståelse av hva som er "varekode", "pris" eller "antall". Standard import-verktøy for tabelldata, som Excel eller pandas, klarer ikke å lese dette direkte. For å låse opp dataene utviklet vi en pipeline i Python basert på biblioteket `pdfplumber`, som tillater inspeksjon av tekst og koordinater på objekt-nivå. Pipelinen er bygget i fire steg:
+
+1. **PDF-parsing.** For hver dagsrapport åpnes PDF-en, og hver side gjennomgås. Vi inspiserer de eksakte $(x, y)$-koordinatene for hver tekstboks og identifiserer kolonnegrenser empirisk (f.eks. kolonnen "Antall par" ligger konsistent ved x ≈ 400, og "Omsetning" ved x ≈ 500). Disse koordinatene er identifisert ved manuell inspeksjon av et utvalg representative rapporter og dokumentert i kildekoden.
+2. **Linje-validering med regex.** Hver linje i den ekstraherte teksten kontrolleres mot mønsteret `^\d{6}`, som validerer at linjen starter med et gyldig sekssifret varenummer. Linjer som ikke matcher (overskrifter, kolonnetitler, sumlinjer, tomme linjer) forkastes systematisk. Dette er en konkret implementering av prinsippet "garbage in, garbage out": ved å filtrere strengt ved inntak, slipper vi å rydde opp i feil senere i pipelinen.
+3. **Aggregering.** Validerte rader samles til daglige, månedlige og årlige nivåer. Returer registreres i kassesystemet som negative salgsbeløp og blir derfor automatisk trukket fra netto-etterspørselen ved aggregering. Dette gir oss det vi i lagerstyringsteorien kaller den "effektive etterspørselen", som er det riktige inputet for prognosemodellering.
+4. **Kvalitetskontroll med kontrollsum.** Hver dagsrapport har et eget "Total salg"-felt i bunnen som er generert av kassesystemet uavhengig av linjevariablene. Vår pipeline summerer alle linje-elementer og kontrollerer at summen stemmer med "Total salg"-feltet innenfor en toleransegrense (typisk 0,5 %). Dette fungerer som en automatisk integritetstest og avdekker både parser-feil og potensielle feilregistreringer i kassesystemet.
+
+Resultatet av pipelinen er to strukturerte CSV-filer: `skoringen_salgsdata_clean.csv` med dagsdata for hver transaksjon, og `skoringen_monthly_clean.csv` med 36 månedsobservasjoner som er basis for tidsserieanalysen. Dette transformerer det opprinnelige korpuset på over 1 000 PDF-filer til et reproduserbart datasett som kan analyseres med standard kvantitative metoder.
+
+### 3.3 Datavasking og preparering
+Dataene fra parser-pipelinen er ferdig validert syntaktisk, men kan fortsatt inneholde semantiske avvik som må håndteres før modellering. Vi har gjennomført følgende vaskinger:
+
+**Returer.** Returer registreres som negative salgsbeløp i kassesystemet og blir automatisk inkludert i netto-etterspørselen gjennom aggregeringen. Pensumets Ch09 §3 (revers-nettverk) og Ch09 §4 (Weibull-retur) viser at returer i prinsippet kan modelleres som en separat tidsserie med levetidsfordeling, hvilket gir en mer presis modell av faktisk lagerflyt. For vår analyse er datavolumet imidlertid for begrenset til å forsvare en separat Weibull-tilpasning – under tre års dagsdata gir for få retur-observasjoner til at vi kan estimere parameterne med tilstrekkelig presisjon. Aggregering til netto-etterspørsel er derfor det pragmatiske valget i hovedanalysen, og en separat retur-modell er anbefalt som videre arbeid.
+
+**Uteliggere.** Vi identifiserer uteliggere ved hjelp av Z-score med terskel 3, dvs. observasjoner som ligger mer enn tre standardavvik fra månedens gjennomsnitt. Slike observasjoner inspiseres manuelt før eventuell korrigering. Mulige forklaringer er systemfeil, registreringsfeil, eller reelle hendelser (f.eks. en ekstraordinær kampanje eller en større bedriftskunde). I praksis fant vi noen få dager med uvanlig høyt salg som syntes å være registreringsfeil i kassesystemet (f.eks. hvor `Antall_par` og `Omsetning_total` var byttet om), og disse ble korrigert manuelt.
+
+**Frekvenskonvertering.** Daglige salgstall inneholder mye støy fra dag-til-dag-variasjoner som ikke er relevante for sesongbestilling. Vi konverterer derfor til månedsfrekvens via `pandas.resample('MS')`, som aggregerer alle dager i en kalendermåned til én observasjon. Dette glatter ut den daglige støyen og fremhever det underliggende sesongsignalet. Valg av månedsfrekvens fremfor uke- eller kvartalsdata er begrunnet i to forhold: (i) det matcher rapporteringsfrekvensen i Skoringens egne månedsrapporter, og (ii) det gir nok observasjoner ($n=36$) til at SARIMA-modellen kan estimeres meningsfullt, samtidig som det reduserer støy som ville dominert dagsanalysen.
+
+### 3.4 Modellering og modellvalg (FS2)
+Vi sammenligner fire modeller, alle estimert på treningssettet (jan 2023 – des 2024, $n=24$ måneder) og evaluert mot testsettet (jan 2025 – des 2025, $n=12$ måneder):
+
+1. **Naiv baseline.** Den enkleste tenkbare prognose-metoden: $\hat{Y}_{t} = Y_{t-12}$, dvs. "samme måned i fjor". Dette er ikke bare en akademisk referanse – det er en realistisk approksimasjon av dagens praksis hos butikken og fungerer derfor som det relevante sammenligningspunktet for å vurdere forbedring.
+
+2. **ETS (Holt-Winters).** Eksponentiell glatting med additive trend- og sesongkomponenter, periodelengde 12. Estimeres via `statsmodels.tsa.exponential_smoothing.ets.ETSModel`.
+
+3. **ARIMA(1,1,1).** Sesongløs ARIMA, inkludert som kontrollmodell. Hvis SARIMA er signifikant bedre enn ARIMA, er det direkte evidens for at sesongleddet er nødvendig og bærer informasjon.
+
+4. **SARIMA(1,1,1)(1,1,1)$_{12}$.** Hovedmodellen vår, estimert via `statsmodels.tsa.statespace.sarimax.SARIMAX`. Parametervalget er gjort gjennom et automatisert grid-søk over et utvalg kombinasjoner $(p, d, q) \in \{0,1,2\}^3$ og $(P, D, Q) \in \{0,1\}^3$, med valg etter laveste AIC. Vi har satt `enforce_stationarity=False` og `enforce_invertibility=False` for å la optimeringen konvergere på det numerisk stabile området, noe som er standard praksis for kort tidsserie med få observasjoner.
+
+En femte modell, basert på maskinlæring (LightGBM/gradient boosting), ble vurdert med utgangspunkt i pensumets Ch01 §5 (mange-variabler). Den ble forkastet for hovedanalysen av to grunner: (i) med kun 24 treningsobservasjoner blir gradient boosting-modeller svært overfit-utsatt, og (ii) hovedfordelene ved ML – nemlig evnen til å håndtere mange korrelerte features og ikke-lineære interaksjoner – får ikke utfoldet seg uten et større datavolum og rikere feature-sett. ML-baseline anbefales som naturlig modell ved utvidelse til SKU/dag-nivå (kapittel 6.4), hvor datavolumet vil være i størrelsesorden $10^4$ observasjoner i stedet for $10^1$.
+
+**Evalueringsmål.** Vi rapporterer tre standard målefunksjoner:
+
+- **Mean Absolute Error (MAE):** $\text{MAE} = \frac{1}{n}\sum_{t=1}^{n}|Y_t - \hat{Y}_t|$. Lett å tolke, måles i samme enhet som data (par/mnd).
+- **Root Mean Squared Error (RMSE):** $\text{RMSE} = \sqrt{\frac{1}{n}\sum_{t=1}^{n}(Y_t - \hat{Y}_t)^2}$. Straffer store feil hardere enn MAE og er derfor relevant når store enkeltavvik er spesielt kostbare.
+- **Mean Absolute Percentage Error (MAPE):** $\text{MAPE} = \frac{1}{n}\sum_{t=1}^{n}\left|\frac{Y_t - \hat{Y}_t}{Y_t}\right| \cdot 100\%$. Skala-uavhengig og lett å sammenligne på tvers av produkter eller bransjer.
+
+I tillegg til disse rapporterer vi forbedring i MAE relativt til naiv baseline, som er det mest intuitive målet for "hvor mye bedre er denne modellen enn dagens praksis".
+
+### 3.5 Newsvendor-implementering (FS3)
+For hver sesong $i \in \{\text{vår}, \text{høst}\}$, hvor våren omfatter mars–august og høsten september–februar (totalt 12 måneder fordelt på de to sesongene), beregnes følgende:
+
+**Forventet sesongetterspørsel.** Summerer SARIMA-prognosen over sesongens måneder:
+$$\mu_i = \sum_{t \in \text{sesong } i} \hat{Y}_t$$
+
+**Sesongstandardavvik.** Under antakelse om uavhengige månedsfeil med konstant standardavvik $\sigma_{\text{mnd}}$, blir variansen for hele sesongen $\sigma_i^2 = n_i \cdot \sigma_{\text{mnd}}^2$, der $n_i$ er antall måneder i sesongen. Standardavviket blir derfor:
+$$\sigma_i = \sigma_{\text{mnd}} \cdot \sqrt{n_i}$$
+
+I praksis er ikke månedsfeilene nøyaktig uavhengige – det vil typisk være noe positiv autokorrelasjon over korte horisonter – men annektivvirkningen på sesongnivå er liten, og uavhengighet gir et konservativt (litt for høyt) standardavviksestimat som er rimelig som første tilnærming. $\sigma_{\text{mnd}}$ er estimert til 222,2 par fra RMSE av SARIMA-residualene i 2025-testperioden.
+
+**Optimal bestilling.** Med kritisk forhold $\text{CR} = (p-w)/(p-s)$ og $z_\alpha = \Phi^{-1}(\text{CR})$:
+$$Q^*_i = \mu_i + z_\alpha \cdot \sigma_i$$
+
+**Naiv sammenligning.** Vi bruker en realistisk approksimasjon av dagens praksis ved å sette bestillingen lik fjorårets faktiske sesongsalg:
+$$Q^{\text{naiv}}_i = \sum_{t \in \text{sesong } i, \text{ fjorår}} Y_t$$
+
+Denne strategien er ikke nødvendigvis det formelt "verste" valget – den er tvert imot rimelig fornuftig som heuristikk – men den ignorerer både trend (årssalget vokser) og endringer i sesongprofil. Ved å bruke fjorårssalg som baseline får vi et realistisk bilde av hvor mye SARIMA-newsvendor faktisk forbedrer dagens beslutningsmetode.
+
+**Utvidelse til SKU-nivå.** På SKU-nivå (én SKU per størrelse per modell) ville den korrekte formuleringen være en multi-produkt $(Q,R)$-modell med delt lagerkapasitet, som behandlet i pensumets Ch02 §3. Dette ville innebære at vi løser et flerdimensjonalt newsvendor-problem hvor totalbestillingen er bundet av kapasiteten, og hvor sikkerhetslageret allokeres mellom SKU-er etter risiko og marginalbidrag. Vi avgrenser oss til aggregert SKU i hovedanalysen av to grunner: (i) Skoringens datasystem rapporterer ikke konsekvent på SKU-nivå over hele perioden, og (ii) SKU-modellen ville krevd betydelig flere observasjoner for å estimere stabilt. Ch02 §3 brukes som rammeverk for utvidelsen som drøftes i kapittel 5.3 og kapittel 6.4.
+
+### 3.6 Økonomisk evaluering (FS4)
+For hver bestillingsstrategi $k \in \{\text{naiv}, \text{newsvendor}\}$ beregnes økonomisk konsekvens for den aktuelle sesongen som funksjon av faktisk realisert salg $D$:
+
+**Bruttoresultat:**
+$$\Pi_k = p \cdot \min(Q_k, D) + s \cdot \max(0, Q_k - D) - w \cdot Q_k$$
+
+Det første leddet er omsetningen fra fullprisede salg (begrenset av enten lager eller etterspørsel), det andre er restverdien fra usolgte enheter (rabattsalg), og det tredje er innkjøpskostnaden for hele bestillingen.
+
+**Alternativkostnad ved tapt salg:**
+$$L_k = (p - w) \cdot \max(0, D - Q_k)$$
+
+Dette er det dekningsbidraget butikken går glipp av når lager går tomt. Vi inkluderer dette eksplisitt fordi det er en reell økonomisk konsekvens av understocking, selv om det ikke vises som en direkte kostnad i regnskapet.
+
+**Netto effekt på årsresultat:**
+$$N_k = \Pi_k - L_k$$
+
+Vi bruker antatte enhetspriser $p = 1\,200$, $w = 600$, $s = 400$ NOK/par. Disse er **estimat** og blir kontrollert for sensitivitet i kapittel 4.4.1. En presis kalkyle vil kreve transaksjonsdata fra Skoringens regnskap, som ikke er tilgjengelig på dette tidspunktet, men sensitivitetsanalysen viser at retningen i konklusjonen er robust over det rimelige variasjonsområdet.
+
+---
+
+## 4. Empirisk analyse og resultater
+
+### 4.1 Beskrivende analyse av datasettet (FS1)
+Det rensede datasettet består av **36 månedsobservasjoner** fra januar 2023 til desember 2025, totalt **29 619 par solgt** over treårsperioden. Årssummene er 9 041 (2023), 9 778 (2024) og 10 800 (2025), hvilket gir en gjennomsnittlig årlig vekst på 9,3 prosent. Trenden er positiv og synes å akselerere noe – fra 8,2 prosent vekst i 2023→2024 til 10,4 prosent i 2024→2025 – hvilket er konsistent med den observerte befolkningsveksten i Eidsvoll-regionen og det generelle inntrykket av at butikken har styrket sin posisjon mot konkurrentene de siste par årene.
+
+<div align="center">
+  <img src="../013_gjennomforing/visuals/01_omsetning_over_tid.png" alt="Månedlig omsetning 2023-2025" width="80%">
+  <p align="center"><small><i>Figur 4.1 Månedlig totalomsetning hos Skoringen Råholt fra januar 2023 til desember 2025. Den positive trenden er synlig som en svak stigning i grunnlinjen, mens sesongmønsteret med vår- og høsttopper er den dominerende strukturen.</i></small></p>
+</div>
+
+#### Deskriptiv statistikk
+Det månedlige salget i hele perioden har et gjennomsnitt på 822 par, en median på 808 par, et standardavvik på 234 par og spenner fra 414 par (januar 2023, laveste observasjon) til 1 437 par (september 2025, høyeste observasjon). Det relativt store standardavviket sammenlignet med gjennomsnittet (variasjonskoeffisient = 0,28) bekrefter den sterke sesongavhengigheten i dataene. Fordelingen er ikke normalfordelt: en visuell inspeksjon av histogrammet og en formell Shapiro-Wilk-test (p-verdi < 0,05) avviser normalfordelingsantakelsen, hvilket er forventet fordi salget har en multimodal struktur drevet av sesongene.
+
+#### Sesongmønster
+Sesongmønsteret er distinkt og bemerkelsesverdig stabilt på tvers av år. Tabell 4.1 viser gjennomsnittlig månedssalg over treårsperioden, der hver måned er gjennomsnittet av tre observasjoner (én per år 2023, 2024 og 2025).
+
+| Måned | Snitt (par) | Andel av år | | Måned | Snitt (par) | Andel av år |
+|---|---:|---:|---|---|---:|---:|
+| Januar | 510 | 5,2 % | | Juli | 775 | 7,9 % |
+| Februar | 820 | 8,3 % | | August | 1 024 | 10,4 % |
+| Mars | 825 | 8,4 % | | September | 1 120 | 11,3 % |
+| April | 1 028 | 10,4 % | | Oktober | 643 | 6,5 % |
+| Mai | 971 | 9,8 % | | November | 750 | 7,6 % |
+| Juni | 808 | 8,2 % | | Desember | 600 | 6,1 % |
+
+*Tabell 4.1 Gjennomsnittlig månedssalg og andel av årssalg, beregnet over 2023–2025. Variasjon høyeste/laveste måned: 2,2x.*
+
+Det er to klare topper i mønsteret: en **vårtopp** i april–mai og en **høsttopp** i august–september. Vårtoppen er drevet av overgang fra vintersko til vår-/sommerfottøy, sandaler og lette joggesko, samt høytidsbasert salg knyttet til konfirmasjoner og 17. mai. Høsttoppen er drevet av overgang fra sommersko til lukkede sko, joggesko for skole og vinterstøvler, samt skolestart i august. Mellom toppene finner vi to lavpunkter: en kort lavperiode i juli (sommerferie, mange kunder bortreist) og det dypere lavpunktet i januar (post-jul-effekt, ingen tilstrekkelig salgsdriver). Forholdet mellom høyeste og laveste måned er 2,2x, noe som er betydelig nok til å gjøre tradisjonell EOQ utilstrekkelig og bekrefter at en eksplisitt sesongmodell er nødvendig.
+
+<div align="center">
+  <img src="../013_gjennomforing/visuals/02_sesongtrender_sammenligning.png" alt="Sesongtrender på tvers av år" width="80%">
+  <p align="center"><small><i>Figur 4.2 Sammenligning av sesongmønster 2023–2025. Linjene følger hverandre tett, noe som indikerer at sesongstrukturen er stabil på tvers av år – en gunstig egenskap for SARIMA-modellering.</i></small></p>
+</div>
+
+Stabiliteten i sesongmønsteret på tvers av de tre årene er en sentral observasjon. Den indikerer at sesongkomponenten er den dominerende strukturen i dataene, og at en model som eksplisitt fanger sesongen (SARIMA, ETS) vil forventes å gi vesentlig bedre prognoser enn modeller uten sesongledd (vanlig ARIMA). Visuelt ser vi noe avvik mellom årene i septembertallene – 2025 ser ut til å ha en uvanlig høy september – noe vi kommer tilbake til i tolkningen av newsvendor-resultatene.
+
+### 4.2 Prognosepresisjon (FS2)
+Alle modellene ble estimert på treningsperioden 2023–2024 ($n=24$ måneder) og evaluert mot testperioden 2025 ($n=12$ måneder). Tabell 4.2 oppsummerer feilmålene på testperioden.
+
+| Modell | MAE (par) | RMSE | MAPE | Forbedring i MAE vs Naiv |
+|---|---:|---:|---:|---:|
+| **SARIMA(1,1,1)(1,1,1)$_{12}$** | **137** | 222 | 17,4 % | **+15,8 %** |
+| Naiv baseline (samme måned i fjor) | 163 | 197 | 19,0 % | – |
+| ETS (Holt-Winters, additiv) | 177 | 231 | 20,3 % | –8,8 % |
+| ARIMA(1,1,1) – uten sesongledd | 229 | 278 | 24,5 % | –40,5 % |
+
+*Tabell 4.2 Prognosepresisjon på testperioden 2025 (out-of-sample). SARIMA gir best resultat på MAE og MAPE; den naive baseline har lavest RMSE fordi den treffer godt på de mest stabile månedene.*
+
+#### Hva tallene forteller oss
+SARIMA gir den klart laveste MAE-en (137 par/mnd) og MAPE-en (17,4 %), og forbedrer den naive strategien med 15,8 prosent på MAE og 8,4 prosent på MAPE. ARIMA uten sesongledd er den klart svakeste modellen og gjør faktisk dårligere enn naiv baseline, hvilket er det formelle beviset på at sesongleddet er nødvendig: når man fjerner sesongkomponenten fra modellen, mister den evnen til å skille mellom høysesong og lavsesong. Dette resultatet er konsistent med den teoretiske forventningen i pensumets Ch01 §3 og er et entydig empirisk argument for å bruke SARIMA fremfor sesongløs ARIMA i denne typen problemstilling.
+
+ETS (Holt-Winters) er bedre enn ARIMA uten sesong, men svakere enn både naiv baseline og SARIMA på dette datasettet. Dette er noe overraskende – ETS er generelt sett konkurransedyktig med SARIMA – og kan trolig forklares med at ETS i sin additive formulering ikke håndterer den voksende trenden i sesongtoppene like godt som SARIMA gjør gjennom sin sesongmessige differensiering.
+
+På **årsbasis** traff SARIMA-prognosen for 2025 med 10 530 par mot faktisk salg på 10 800 par, et avvik på 2,5 prosent. Dette tilsvarer det som i prognoselitteraturen anses som "verdensklasse"-presisjon for detaljhandel på enkeltbutikknivå (Ramos et al., 2015), selv om presisjonen på enkeltmåneder altså er lavere (17,4 % MAPE).
+
+<div align="center">
+  <img src="../013_gjennomforing/visuals/demand_forecast_comparison.png" alt="Prognosesammenligning" width="80%">
+  <p align="center"><small><i>Figur 4.3 SARIMA-, ARIMA- og ETS-prognose mot faktisk salg 2025. SARIMA (oransje) fanger toppene i april og september langt bedre enn ARIMA uten sesongledd (grønn), mens ETS (rød) ligger imellom.</i></small></p>
+</div>
+
+#### Residualdiagnostikk
+For å verifisere at SARIMA-modellen er tilstrekkelig spesifisert undersøker vi residualene fra in-sample-fittet. Tre kontroller utføres:
+
+**Stasjonæritet** av den differensierte serien testes med Augmented Dickey-Fuller (ADF). På rådata gir testen en p-verdi på 0,82 (kan ikke forkaste enhetsrot, ikke stasjonær), mens etter sesongmessig differensiering ($d=1, D=1$) faller p-verdien til 0,002 (vi forkaster enhetsrot, serien er stasjonær). Dette bekrefter at differensieringen er nødvendig og tilstrekkelig.
+
+**Hvit støy** i residualene testes med Ljung-Box-testen for autokorrelasjon ved lag 12 og lag 24. Begge gir p-verdier over 0,05, hvilket betyr at vi ikke kan forkaste hypotesen om at residualene er hvit støy. Modellen har dermed ikke gjenværende systematiske mønstre i feilene.
+
+**Normalfordeling** av residualene undersøkes både visuelt (histogram, Q-Q-plot) og formelt (Shapiro-Wilk). Residualene er tilnærmet normalfordelt rundt null, med skewness nær 0 og kurtosis nær 3 (normalverdiene). Dette gir oss legitimitet til å bruke RMSE som proxy for $\sigma$ i newsvendor-formelen, fordi $\sigma$ der antar normalfordelt residualstruktur.
+
+Den fullstendige diagnostiske gjennomgangen er dokumentert separat i `013_gjennomforing/valideringsrapport.md`. Konklusjonen er entydig: SARIMA-modellen oppfyller standardkravene og kan brukes som leverandør av $\mu$ og $\sigma$ til newsvendor-modellen.
+
+### 4.3 Newsvendor-bestilling (FS3)
+Med antatte enhetspriser $p = 1\,200$, $w = 600$, $s = 400$ NOK/par blir det kritiske forholdet:
+
+$$\text{CR} = \frac{p - w}{p - s} = \frac{1\,200 - 600}{1\,200 - 400} = \frac{600}{800} = 0{,}750$$
+
+Dette tilsvarer et optimalt servicenivå på 75 prosent. Den tilhørende standard-normal-kvantilen er $z_\alpha = \Phi^{-1}(0{,}750) = 0{,}6745$.
+
+#### Beregning av sikkerhetslager
+Med månedlig prognoseusikkerhet estimert til $\sigma_{\text{mnd}} = 222{,}2$ par (RMSE av SARIMA-residualene fra 2025-testperioden), og sesonglengde $n = 6$ måneder, blir sesongstandardavviket:
+
+$$\sigma_i = \sigma_{\text{mnd}} \cdot \sqrt{n} = 222{,}2 \cdot \sqrt{6} = 544{,}3 \text{ par}$$
+
+og sikkerhetslageret:
+
+$$\text{Sikkerhetslager} = z_\alpha \cdot \sigma_i = 0{,}6745 \cdot 544{,}3 = 367 \text{ par per sesong}$$
+
+Dette tallet kan tolkes som det ekstra volumet ut over forventet etterspørsel som butikken bør bestille for å absorbere prognoseusikkerheten. Det skaleres direkte med både servicenivå (gjennom $z_\alpha$) og prognosepresisjon (gjennom $\sigma$). Jo mer presis prognose, desto mindre sikkerhetslager kreves for å oppnå samme servicenivå – noe som er den teoretiske begrunnelsen for å investere kontinuerlig i prognoseforbedring.
+
+#### Bestillingsanbefalinger
+Tabell 4.3 viser de konkrete bestillingsanbefalingene for 2025-sesongen, sammenlignet med naiv strategi og faktisk realisert salg.
+
+| Sesong 2025 | $\mu_{\text{SARIMA}}$ | Sikkerhetslager | $Q^*$ (newsvendor) | $Q_{\text{naiv}}$ | Faktisk salg | Avvik faktisk vs $Q^*$ |
+|---|---:|---:|---:|---:|---:|---:|
+| Vår (mar–aug) | 5 663 | 367 | **6 030** | 5 389 | 6 000 | +30 (+0,5 %) |
+| Høst (sep–feb) | 3 201 | 367 | **3 568** | 4 120 | 3 657 | –89 (–2,4 %) |
+
+*Tabell 4.3 Sesongbestilling etter newsvendor vs naiv strategi for 2025.*
+
+Det interessante mønsteret er at de to strategiene avviker i hver sin retning fra hverandre, og at avviket har en logisk forklaring i hver av sesongene:
+
+**Vårsesongen.** Newsvendor anbefaler å bestille **641 par mer** enn naiv strategi (6 030 vs 5 389). Forklaringen er at etterspørselen er stigende fra år til år, og at "fjorårssalg"-strategien systematisk undervurderer behovet i et marked i vekst. Newsvendor fanger denne trenden gjennom SARIMA-prognosens trendkomponent og legger i tillegg på et sikkerhetslager. Resultatet treffer faktisk salg (6 000 par) nesten perfekt, med kun 30 par i overskudd.
+
+**Høstsesongen.** Her anbefaler newsvendor å bestille **552 par mindre** enn naiv strategi (3 568 vs 4 120). Forklaringen ligger i at høst 2024 hadde en uvanlig kraftig september (1 085 par i 2024 mot 837 par i 2023), drevet av forhold som ikke nødvendigvis gjentar seg. Naiv strategi tar dette engangsutslaget og repeterer det, mens SARIMA glatter ut effekten på tvers av flere års data og gir en mer nøkternt estimat. Newsvendor-anbefalingen treffer 89 par under faktisk salg – ikke perfekt, men nær.
+
+Mønsteret illustrerer en sentral fordel ved den datadrevne tilnærmingen: den korrigerer både for systematisk under- og overestimering, mens enkle heuristikker som "bestill det samme som i fjor" kun har én feilmodus de korrigerer mot (forrige sesongs avvik). Dette er i kjernen av hvorfor strukturell prognosemodellering forventes å overgå erfaringsbaserte heuristikker.
+
+<div align="center">
+  <img src="../013_gjennomforing/visuals/newsvendor_profit_curve.png" alt="Newsvendor profittkurve vår 2025" width="80%">
+  <p align="center"><small><i>Figur 4.4 Forventet bruttoresultat som funksjon av bestilt mengde for vårsesongen 2025, beregnet etter newsvendor-formelen. Den røde stiplete linjen markerer det optimale punktet $Q^* = 6\,030$ par; den grønne prikkete linjen markerer $\mu_{\text{SARIMA}} = 5\,663$ par. Profittkurven er flat nær toppen, noe som indikerer at moderate avvik fra Q* har relativt liten effekt på forventet bruttoresultat.</i></small></p>
+</div>
+
+Den flate kurven nær $Q^*$ er en viktig observasjon: newsvendor-løsningen er **robust** for små feil i estimeringen av $\mu$ og $\sigma$. Selv hvis butikken bestiller 200–300 par mer eller mindre enn det matematisk optimale $Q^*$, blir det forventede tapet i bruttoresultat marginalt. Dette gjør modellen praktisk anvendbar selv om prisparameterne er antatte.
+
+### 4.4 Økonomisk effekt og lagerprofil (FS4)
+Tabell 4.4 oppsummerer den realiserte økonomien for begge strategiene under 2025-etterspørselen.
+
+| Komponent | Naiv strategi | Newsvendor-strategi | Differanse |
+|---|---:|---:|---:|
+| Bestilling vår (par) | 5 389 | 6 030 | +641 |
+| Bestilling høst (par) | 4 120 | 3 568 | –552 |
+| Total bestilling 2025 | 9 509 | 9 598 | +89 |
+| Tapt salg vår (par) | 611 | 0 | –611 |
+| Overskuddslager høst (par) | 463 | 0 | –463 |
+| Bruttoresultat | 5 335 000 NOK | 5 735 122 NOK | **+400 122 NOK** |
+| Alternativkostnad tapt salg | 366 600 NOK | 53 101 NOK | **–313 499 NOK** |
+| **Netto effekt på årsresultat** | 4 968 400 NOK | 5 682 021 NOK | **+713 621 NOK (+14,4 %)** |
+
+*Tabell 4.4 Estimert årlig økonomisk effekt 2025. Alle kronebeløp er **estimat** basert på antatte enhetspriser ($p, w, s$).*
+
+#### Hvor kommer gevinsten fra?
+Den totale årlige forbedringen på 713 621 NOK kan dekomponeres slik:
+
+- **Vårsesongen, +566 423 NOK.** Newsvendor unngår 611 par tapt salg (som naiv strategi ville hatt) ved å bestille 641 par mer. Selv om den ekstra bestillingen øker innkjøpskostnaden, blir nettoeffekten kraftig positiv fordi marginbidraget per ekstra solgt par ($p - w = 600$ NOK) langt overstiger overstockingsstraffen ($w - s = 200$ NOK).
+- **Høstsesongen, +147 198 NOK.** Newsvendor reduserer bestillingen med 552 par og frigjør dermed 110 400 NOK i innkjøp som ellers hadde blitt bundet til overlager. Effekten er mindre dramatisk fordi alternativkostnaden ved overstock er lavere enn ved understock for disse parameterne, men det er fortsatt en reell forbedring.
+
+Sett samlet er det viktig å merke seg at **bare 89 flere par totalt** er bestilt under newsvendor-strategien (9 598 vs 9 509). Det er ikke volumøkningen som driver gevinsten, men **bedre fordeling** av den samme volumet mellom sesongene. Dette er den kvalitative kjernen i resultatene: økonomiske gevinster fra prognosemodellering kommer ikke fra å bestille mer eller mindre totalt, men fra å bestille riktigere fordelt.
+
+<div align="center">
+  <img src="../013_gjennomforing/visuals/inventory_newsvendor_2025.png" alt="Lagerprofil 2025" width="80%">
+  <p align="center"><small><i>Figur 4.5 Simulert lagernivå gjennom 2025 ved begge strategier. Den røde linjen viser naiv strategi (overlager i høst); den grønne viser newsvendor-strategi. Den svarte stiplete linjen viser butikkens kapasitet på 3 000 par – som overskrides i mars av begge strategier, fordi sesongbehovet på 5 000–6 000 par bestilt på én gang strukturelt overstiger kapasiteten.</i></small></p>
+</div>
+
+#### Lagerprofil og kapasitet
+Lagerprofilen i Figur 4.5 viser to klare punkter. For det første overskrides butikkens fysiske kapasitet (3 000 par) i mars av begge strategier. Dette er ikke en feil ved noen av strategiene, men en strukturell konsekvens av at en hel sesongs salgsbehov (5 000–6 000 par) må passere gjennom butikken på én gang når bestillingsfrekvensen er bundet til to per år. Behovet for ekstern lagerleie i de mest belastede vårmånedene kan derfor ikke elimineres gjennom bedre prognose alene – det krever enten endringer i bestillingsregimet (f.eks. forhandling om delleveranser) eller utvidelse av butikkens fysiske lagerareal.
+
+For det andre er lagernivået gjennom resten av året systematisk lavere under newsvendor-strategien. Dette frigjør kapital som ellers ville vært bundet til overlager i høstsesongen, og gir butikken bedre likviditet og lavere lagerholdskostnader.
+
+| Scenario | $p$ | $w$ | $s$ | CR | $z_\alpha$ | $Q^*$ vår | Endring vs basis |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Lav margin | 1 000 | 600 | 400 | 0,667 | 0,43 | 5 897 | –2,2 % |
+| **Basisscenario** | **1 200** | **600** | **400** | **0,750** | **0,67** | **6 030** | **0,0 %** |
+| Høy margin | 1 500 | 600 | 400 | 0,818 | 0,91 | 6 157 | +2,1 % |
+| Lav restverdi | 1 200 | 600 | 200 | 0,600 | 0,25 | 5 801 | –3,8 % |
+| Høy restverdi | 1 200 | 600 | 550 | 0,923 | 1,43 | 6 439 | +6,8 % |
+
+*Tabell 4.5 Sensitivitet av $Q^*$ vår 2025 for endringer i $p$, $w$ og $s$.*
+
+Resultatet er robust: $Q^*$ varierer med under ±10 prosent over rimelige scenarier, og rangeringen *newsvendor > naiv* beholdes i alle scenarioer. Den mest sensitive parameteren er **restverdien $s$**, hvilket er konsistent med teorien: lav restverdi øker overbestillingsstraffen $C_o = w - s$ og trekker $Q^*$ ned mot $\mu$, mens høy restverdi reduserer straffen og lar modellen trygt anbefale et høyere sikkerhetslager.
+
+For praktisk implementering betyr dette at Skoringen kan starte med basisscenarioets parametere uten frykt for at konklusjonen kollapser hvis de senere viser seg å være litt unøyaktige. En grovere tilnærming hvor butikken bare beregner kritisk forhold ut fra grovt anslåtte gjennomsnittspriser, vil gi anbefalinger som ligger innenfor ±10 prosent av det "matematisk korrekte" $Q^*$. Dette er innenfor den toleransen som likevel oppstår fra prognoseusikkerheten i SARIMA, og er derfor ikke et bindende presisjonsproblem.
+
+---
+
+## 5. Diskusjon
+
+### 5.1 Informasjon som beslutningsstøtte – ikke som lagererstatning
+Et tidligere narrativ i prosjektet var at "informasjon erstatter fysisk lager". Etter å ha gjennomført den empiriske analysen er det klart at dette er en for sterk påstand for Skoringens situasjon. Med to bestillinger pr år er sesongbehovet på 5 000–6 000 par et **strukturelt minstevolum** som må passere gjennom butikken på én gang. Newsvendor-modellen reduserer ikke dette volumet – den optimaliserer hvor mye av det som bestilles av riktig produkt og når-på-året det treffer hyllene. Pensumets Ch07 §5 (integrert lagerplanlegging) underbygger denne nyansen: informasjon er beslutningsstøtte for **hva** og **hvor mye**, mens fysisk areal er bestemt av den underliggende strukturen i forsyningskjeden, særlig bestillingsfrekvensen og leveringstiden.
+
+Dette har viktige implikasjoner for hvordan studiens resultater bør formidles til Skoringen. Det vil være feilaktig å påstå at "ekstern lagring kan elimineres" – vi har ikke vist det, og lagerprofilen i Figur 4.5 viser tvert imot at sesongtoppen i mars overstiger den fysiske kapasiteten på 3 000 par uavhengig av bestillingsstrategi. Det vi har vist, er at innenfor det gitte regimet kan butikken oppnå en estimert årlig forbedring på 713 621 NOK (+14,4 %) i nettoresultat ved å flytte fra erfaringsbasert til modellbasert sesongbestilling. Det er en betydelig forbedring – men den retter seg mot en annen flaskehals enn lagerkapasiteten.
+
+Spørsmålet om det eksterne lageret bør elimineres er i sin natur en **fasilitetsbeslutning**. Pensumets Ch04 §3 (Uncapacitated Facility Location Problem, UFLP) gir det formelle rammeverket: man veier åpningskostnaden for ekstra fasilitet mot reduserte transportkostnader og dobbelthåndteringer. For Skoringen indikerer våre tall at en bedre prognose alene ikke fjerner behovet for ekstern kapasitet i de mest belastede vårmånedene – behovet er strukturelt. Hvis butikken ønsker å eliminere det eksterne lageret, må de vurdere en av to alternative veier: enten **utvide intern lagerkapasitet** (kostbart, men eliminerer dobbelthåndteringen permanent), eller **forhandle med leverandøren om delleveranser** innenfor de to årlige bestillingene (dvs. samme antall ordrer, men levert i porsjoner over flere uker).
+
+Pensumets Ch07 §3 (slotting / class-based storage) er også relevant her. Selv om vi ikke kan eliminere det eksterne lageret, kan vi optimalisere hvordan det interne lageret brukes. Ved å plassere de mest etterspurte modellene (klasse A) i de mest tilgjengelige hyllene, og lagring av sesongavslutningsvarer (klasse C) lengre bort, kan man redusere intern dobbelthåndtering uavhengig av bestillingsstrategi. Dette er en operasjonell forbedring som kan implementeres parallelt med den strategiske bestillingsmodellen.
+
+#### Den teoretiske gevinsten dekomponert
+Den reelle gevinsten av modellen er todelt og kan knyttes direkte til SARIMA-prognosens evne til å fange to forskjellige dynamikker:
+
+1. **Færre tapte salg** når SARIMA fanger en stigende trend som naiv strategi ikke ser. Dette er den dominerende gevinsten i vårt case (+566 423 NOK i vårsesongen).
+2. **Mindre overlager** når SARIMA fanger at fjorårets høst var en enkelthendelse og ikke et nytt nivå (+147 198 NOK i høstsesongen).
+
+Begge effektene knytter seg til **prognoseusikkerheten** $\sigma$. Lavere $\sigma$ gir lavere sikkerhetslager og mer presise bestillinger, og dette er den teoretiske begrunnelsen for å investere videre i prognosearbeid – enten gjennom bedre data (eksogene variabler), mer raffinerte modeller (ARIMAX, ML), eller hyppigere kalibrering (rullerende prognose).
+
+### 5.2 Bullwhip-effekten og leverandørsamarbeid
+En sentral implikasjon av studien går utover Skoringen Råholt isolert sett og knytter seg til hvordan butikken samhandler med sin leverandør. Pensumets Ch05 §3 (bullwhip-simulering) viser kvantitativt at varians-forsterkningen i forsyningskjeden reduseres når detaljisten deler informasjon med leverandøren. To store sesongbestillinger pr år gir leverandøren et meget volatilt etterspørselssignal: leverandøren ser ikke det jevne underliggende salget på 800–1 000 par per måned, kun to "spikes" i februar og august på 4 000–6 000 par hver.
+
+Vi anbefaler at Skoringen vurderer å dele **rullerende SARIMA-prognoser** med leverandøren. Det vil ikke endre bestillingsregimet (det er bundet av leverandørens egen produksjonssyklus), men det vil gi leverandøren et bedre grunnlag for sin egen kapasitetsplanlegging. Dette er konsistent med Vendor Managed Inventory (VMI)-litteraturen hos Christopher (2016) og med pensumets Ch05 §4 (multi-echelon Clark-Scarf), som formaliserer hvordan basisvarer-policyer mellom ledd reduserer den totale varianseksponeringen i kjeden.
+
+På lengre sikt kan dette åpne for forhandling om **risikodelingsavtaler** mellom Skoringen og leverandøren. Pensumets Ch05 §5 (newsvendor-kontrakter) drøfter spesifikt revenue sharing-kontrakter, der leverandøren tar tilbake usolgte enheter mot delvis kreditt etter sesongen. Dette endrer effektivt restverdien $s$ i newsvendor-formelen for detaljisten og lar dem trygt bestille større volumer. For en butikk som Skoringen, hvor "ukurans-rabatten" på sesongslutt er en reell og betydelig kostnad, kan en revenue sharing-avtale på 10–20 prosent av usolgte enheter potensielt være verdt mer enn hele den nåværende prognosegevinsten. Dette er identifisert som videre arbeid i kapittel 6.4.
+
+### 5.3 Begrensninger og forutsetninger
+Studiens funn er gjenstand for flere begrensninger som må være eksplisitte for å sikre korrekt fortolkning:
+
+**Aggregeringsnivå.** Modellen behandler skosalget som én aggregert SKU. I realiteten er størrelsesfordelingen kritisk – en sesongbestilling på 6 030 par er bare verdifull hvis fordelingen mellom størrelser (35–46) og modeller (joggesko, sandaler, boots, mv.) treffer kundenes behov. Pensumets Ch02 §3 (multi-produkt $(Q,R)$ med delt kapasitet) og Ch02 §4 (flerlokasjon stokastisk) gir rammeverket for å utvide modellen til SKU-nivå. En slik utvidelse vil typisk doble eller tredoble både datakravene og kompleksiteten i modellen, men er nødvendig for å gi konkrete bestillingsanbefalinger på modell- og størrelsesnivå.
+
+**Sigma-estimering.** Vi bruker RMSE av SARIMA-residualene fra 2025-testperioden som proxy for fremtidig prognoseusikkerhet. Dette er en pragmatisk tilnærming som kan være for optimistisk hvis 2025 viser seg å være et "rolig" år sammenlignet med fremtiden, eller for pessimistisk hvis modellen forbedres betraktelig når mer data blir tilgjengelig. En mer raffinert tilnærming ville vært å bruke prognosens egen estimerte konfidensinterval fra `statsmodels.SARIMAX.get_forecast`, som inkluderer både parameterusikkerheten og residualvariansen. Dette anbefales for fremtidige iterasjoner av modellen.
+
+**Prisparametere.** $p$, $w$ og $s$ er antatte estimat på henholdsvis 1 200, 600 og 400 NOK/par. En presis kalkyle krever transaksjonsdata fra Skoringens regnskap, som ikke har vært tilgjengelig på dette tidspunktet. Sensitivitetsanalysen i kapittel 4.4.1 viser at konklusjonen om newsvendor > naiv er robust over rimelige variasjoner, men de absolutte tallene (713 621 NOK i årlig gevinst) kan endres med ±10–15 prosent når faktiske priser blir kjent. Disse tallene må derfor leses som *estimat* – de etablerer størrelsesorden, ikke et eksakt prognose for fremtidig nettoeffekt.
+
+**Returer og bytter.** Vi modellerer netto-etterspørsel etter returer ved å trekke fra negative salgsregistreringer. Pensumets Ch09 §3 og §4 viser at en mer presis modellering ville behandle returer som en separat tidsserie med Weibull-fordelt levetid (tid fra kjøp til retur). For Skoringens datavolum gir dette imidlertid for få retur-observasjoner til å estimere stabilt, og aggregering er det metodisk forsvarlige valget. Faktisk lagerflyt kan likevel ha større variasjon enn det netto-modellen viser, særlig i januar (hvor mange jule-gaver returneres).
+
+**Eksterne faktorer ikke modellert.** Vi har ikke inkludert vær, konkurrentkampanjer, lokale begivenheter, makroøkonomi eller motesyklus i modellen. Pensumets Ch01 §4 (ARIMAX) viser hvordan slike eksogene variabler kan inkluderes som regressorer i en utvidet modell. Lv et al. (2023) demonstrerer eksplisitt at værinformasjon kan redusere prognosefeil i klesdetaljhandelen med 10–20 prosent, hvilket vil ha direkte konsekvens for $\sigma$ og dermed for sikkerhetslageret.
+
+**Treningsperiode og strukturelle skift.** Modellen er trent på 24 månedsobservasjoner (2023–2024). Dette er nær det minste datavolumet hvor SARIMA(1,1,1)(1,1,1)$_{12}$ kan estimeres meningsfullt. Hvis det skjer et strukturelt skift i etterspørselen – for eksempel en ny konkurrent åpner i nærheten, butikken bytter sortiment, eller en pandemilignende sjokk treffer økonomien – vil modellen feile inntil den får trent på den nye virkeligheten. Pensumets Ch11 §5 (stresstest) gir et rammeverk for å vurdere hvordan modellen reagerer på slike sjokk.
+
+### 5.4 Bærekraft og samfunnsmessige implikasjoner
+Bedre prognoser har en direkte og målbar bærekraftseffekt: redusert overstock betyr færre sko som må selges som ukurans, brennes eller deponeres. Skobransjen er en av de største enkelt-bidragene til klimagassutslipp i tekstilsektoren globalt, og en betydelig andel av dette utslippet stammer fra produkter som aldri når sluttkunden i tide. Hver gang Skoringen bestiller 463 par mer enn nødvendig (slik naiv strategi ville gjort om høsten 2025), representerer dette potensielt 463 par som må flyttes ekstra, lagres ekstra, eller selges med tap.
+
+Pensumets Ch08 §5 (integrert grønn forsyningskjede) formaliserer denne logikken og viser at redusert prognosefeil og redusert dobbelthåndtering oversettes direkte til lavere $\text{CO}_2$-fotavtrykk i vare- og transportstrømmen. Effekten er imidlertid avhengig av at leverandøren også reduserer sin overproduksjon basert på de delte prognosene – ellers flyttes overstocket bare ett ledd opp i kjeden, slik diskutert i kapittel 5.2.
+
+Denne studien gir derfor et reelt bidrag til **FNs bærekraftsmål 12 – Ansvarlig forbruk og produksjon**. Bidraget er beskjedent i absolutt størrelse (én butikk i én bransje), men illustrerer prinsippet om at moderne logistikk-analyse kan ha både økonomiske og miljømessige gevinster samtidig. For en bransje under press fra miljøbevisste forbrukere er dette en strategisk ressurs: butikker som kan dokumentere mer ansvarlig sortimentsstyring vil sannsynligvis ha en konkurransefordel i fremtidens marked.
+
+### 5.5 Implementering, endringsledelse og organisasjonskultur
+Den største praktiske barrieren for å lykkes med modellinnføringen er ikke teknisk, men **organisatorisk og kulturell**. Daglig leder skal gå fra erfaringsbasert til modellbasert beslutningstaking. Dette er ikke en triviell overgang – det krever tillit til en algoritme, vilje til å akseptere at modellen iblant tar feil, og tålmodighet til å investere i datafangst og oppfølging.
+
+Vi anbefaler en gradvis innføring i tre faser:
+
+1. **Parallellkjøring (sesong 1, dvs. høst 2026):** Modellen genererer en bestillingsanbefaling, men daglig leder fatter den endelige bestillingen basert på sin erfaring. Etter sesongen sammenlignes faktisk salg mot både modellens anbefaling og den faktiske bestillingen. Avvik dokumenteres systematisk i en logg. Formålet er å bygge tillit til modellen og å identifisere de tilfellene hvor lokal kunnskap legitimt kan overstyre modellen.
+
+2. **Hybridkjøring (sesong 2–3, dvs. vår og høst 2027):** Modellen brukes som primær input, og daglig leder kan justere bestillingen med ±10 prosent basert på lokal kunnskap (planlagte kampanjer, byggearbeid utenfor butikken, lokale begivenheter, kjente forsinkelser hos leverandører). Justeringer over ±10 prosent skal begrunnes skriftlig.
+
+3. **Modellkjøring (sesong 4 og videre, fra vår 2028):** Modellen brukes som hovedinput, og menneskelig overstyring forekommer kun for unike hendelser som modellen kunne forventes å ikke kunne fange (pandemi, kraftig svekkelse av lokalkonkurransen, etc.). Modellen kalibreres rullerende basert på akkumulert avvik mellom prognose og faktisk salg.
+
+Pensumets Ch10 §3 (AHP+TOPSIS for leverandørvalg) er relevant i denne diskusjonen fordi det åpner for et flerkriterierammeverk der pris, ledetid, fleksibilitet og kvalitet vektes mot hverandre. Hvis Skoringen finner at den nåværende leverandøren ikke gir tilstrekkelig fleksibilitet (f.eks. for store minimumsordrekvanta, for lange leveringstider), kan en formell evaluering av alternative leverandører gi grunnlag for endring. Pensumets Ch03 §5 (MRP-lotstørrelse) viser tilsvarende at lotstørrelse ikke trenger å være statisk – den kan tilpasses sesongvis basert på prognosen, så lenge leverandøren aksepterer variabel ordrestørrelse innenfor de to årlige vinduene.
+
+### 5.6 Studiens bidrag til faget
+Studien gir tre konkrete bidrag til logistikkfaget i en norsk detaljhandelskontekst:
+
+**Et metodisk bidrag.** Pipelinen som konverterer ustrukturerte PDF-rapporter til strukturert tidsserie er reproduserbar og kan tas i bruk av andre detaljhandelsbutikker som sitter på lignende "låst data". Dette adresserer et reelt og påtrengende praktisk problem som ofte hindrer mindre bedrifter fra å utnytte sin egen data. Pipelinen er dokumentert i `006_analysis/` og brukermanualen i `013_gjennomforing/brukermanual_skoringen.md`.
+
+**Et empirisk bidrag.** Studien gir et konkret datapunkt for hva man kan forvente i prognoseforbedring (15,8 % MAE-reduksjon) og økonomisk effekt (+14,4 % i nettoresultat) ved å gå fra erfaringsbasert til modellbasert sesongbestilling i en norsk skobutikk. Dette er nyttig for sammenligning med tilsvarende studier i andre detaljhandelssegmenter og kan tjene som referanseverdi i fremtidige cost-benefit-analyser av prognoseinvesteringer.
+
+**Et pedagogisk bidrag.** Oppgaven viser hvordan pensumkapitler som ofte presenteres som adskilte temaer (SARIMA, newsvendor, bullwhip) kan kombineres til en sammenhengende beslutningsstøttemodell. Mappingtabellen i kapittel 2.5 dokumenterer 22 pensumseksjoner som er anvendt aktivt i analysen, og kan brukes som referanse for tilsvarende bachelor- og masterprosjekter ved Høgskolen i Molde.
+
+---
+
+## 6. Konklusjon og anbefalinger
+
+### 6.1 Hovedfunn
+Studien har vist at en kombinasjon av SARIMA-baserte etterspørselsprognoser og newsvendor-modellen for sesongbestilling gir en estimert årlig forbedring i Skoringen Råholts nettoresultat på **713 621 NOK (+14,4 prosent)** under 2025-data og antatte enhetspriser. SARIMA-modellen reduserer prognosefeilen med 15,8 prosent mot en naiv "samme måned i fjor"-baseline (MAE 137 vs 163 par/mnd) og over 40 prosent mot ARIMA uten sesongledd. Newsvendor-modellen anbefaler å bestille **6 030 par** på vårsesongen og **3 568 par** på høstsesongen for 2025, mot henholdsvis 5 389 og 4 120 par for naiv strategi. Den dominerende gevinsten kommer fra eliminering av tapt salg i vårsesongen, der naiv strategi systematisk undervurderer en stigende trend.
+
+Resultatet er robust over rimelige variasjoner i prisparameterne ($p$, $w$, $s$): sensitivitetsanalysen viser at $Q^*$ varierer med under ±10 prosent, og rangeringen *newsvendor > naiv* beholdes i alle testede scenarioer. Modellens primære begrensning er at den behandler skosalget som én aggregert SKU; en utvidelse til SKU/størrelse-nivå er identifisert som den viktigste neste milepælen.
+
+### 6.2 Svar på forskningsspørsmålene
+**FS1 – Datafangst:** PDF-pipelinen ekstraherer dagsdata fra cirka 1 100 rapporter og leverer en strukturert tidsserie med 36 månedsobservasjoner over 2023–2025. Pipelinen er reproduserbar, automatisert og dokumentert i `006_analysis/`. Det metodiske bidraget er at den viser hvordan en mindre detaljhandelsbedrift kan låse opp sin egen historiske data uten å investere i nytt kassesystem eller eksterne integrasjonsleverandører.
+
+**FS2 – Prognosepresisjon:** SARIMA(1,1,1)(1,1,1)$_{12}$ gir lavest MAE (137 par) og MAPE (17,4 prosent), klart bedre enn ARIMA uten sesongledd (229 par MAE) og bedre enn både ETS (177 par) og naiv baseline (163 par). På årsbasis treffer modellen med 2,5 prosent avvik mot faktisk salg 2025. Residualanalysen bekrefter at modellen er tilstrekkelig spesifisert (Ljung-Box p > 0,05, ADF stasjonær etter $d=1, D=1$).
+
+**FS3 – Optimal sesongbestilling:** Under basisscenarioets parametere ($p=1\,200$, $w=600$, $s=400$ NOK/par) er optimal sesongbestilling $Q^*_{\text{vår}} = 6\,030$ par og $Q^*_{\text{høst}} = 3\,568$ par for 2025, med sikkerhetslager 367 par pr sesong. Løsningen er robust under variasjon i prisparameterne, og den mest sensitive parameteren er restverdien $s$.
+
+**FS4 – Økonomisk effekt:** Estimert årlig effekt er +713 621 NOK (+14,4 prosent) i nettoresultat, fordelt på +400 122 NOK i bruttoresultat og 313 499 NOK reduksjon i alternativkostnaden ved tapt salg. Hovedgevinsten ligger i vårsesongen, hvor newsvendor unngår 611 par tapt salg (366 600 NOK i alternativkostnad).
+
+### 6.3 Anbefalinger til Skoringen Råholt
+Basert på funnene anbefaler vi at butikken vurderer følgende fire tiltak:
+
+1. **Implementer prognosebasert sesongbestilling.** SARIMA-pipelinen bør kjøres månedlig (eller minst kvartalsvis) for å oppdatere prognosen i forkant av bestillingsfristene i februar og august. Pipelinen er allerede ferdig og kan kjøres med ett enkelt kommandolinje-uttrykk: `python 006_analysis/run_full_pipeline.py`. Den anbefalte $Q^*$ for kommende sesong vil ligge i `013_gjennomforing/newsvendor_resultater.json` etter kjøring.
+
+2. **Sett servicenivå eksplisitt.** Ved å beregne det kritiske forholdet $\text{CR} = (p-w)/(p-s)$ basert på faktiske enhetspriser, kan butikken ta et **bevisst** valg om hvor høyt servicenivå de ønsker, snarere enn å la dette være implisitt og avhengig av magefølelsen i øyeblikket. Hvis butikken ønsker høyere servicenivå (f.eks. 90 prosent for å bygge merkevarekapital som "stedet hvor du finner det du trenger"), justeres $z_\alpha$ tilsvarende oppover, med påfølgende økning i sikkerhetslager. Dette er en strategisk beslutning som bør forankres mellom daglig leder og butikkeier.
+
+3. **Del prognosene med leverandøren.** Selv uten endring i bestillingsfrekvens kan dette på lengre sikt gi bedre leveringsbetingelser, lavere innkjøpspriser eller fleksibilitet i ordrestørrelse. Dette er konsistent med VMI-litteraturen og pensumets Ch05 §3 om bullwhip-effekten.
+
+4. **Loggfør realisert salg vs prognose etter hver sesong.** Avvikene er det viktigste datagrunnlaget for å forbedre modellen i fremtidige sesonger. Vi anbefaler en enkel kvartalsvis gjennomgang hvor avvik over $\pm 10$ prosent diskuteres og kategoriseres etter mulige årsaker (vær, kampanjer, lokale hendelser, etc.). Dette er også grunnlaget for å vurdere senere utvidelser med eksogene variabler (ARIMAX).
+
+### 6.4 Videre arbeid
+Pensumkompendiet peker mot flere naturlige utvidelser av studien. Vi har gruppert dem etter modenhet og forventet effekt:
+
+**Høyt prioritert (moderat innsats, høy forventet effekt):**
+- **ARIMAX med eksogene variabler** (Ch01 §4): Inkluder værvarsel, planlagte kampanjer og lokale begivenheter for å redusere $\sigma_{\text{mnd}}$. Lv et al. (2023) viser at værinformasjon alene kan redusere prognosefeilen med 10–20 prosent i klesdetaljhandelen.
+- **Bedre $\sigma$-estimering med rullerende prognose** (Ch11 §3, Monte Carlo): erstatt punktestimat for $\sigma$ med en fordeling som propageres gjennom newsvendor-formelen.
+- **Faktiske enhetspriser**: hent priser ($p$, $w$, $s$) fra Skoringens regnskap for å erstatte estimat-tall med dokumenterte verdier.
+
+**Middels prioritert (moderat-høy innsats, middels-høy effekt):**
+- **Multi-produkt $(Q,R)$ med delt kapasitet** (Ch02 §3): løft modellen fra aggregert sko til SKU/størrelse-nivå.
+- **Flerlokasjonsmodell under usikkerhet** (Ch02 §4): butikk + eksternt lager + søsterbutikker som ett stokastisk nettverk.
+- **ABC/XYZ-klassifisering** (Ch02 §5): segmenter sortimentet før SKU-modellering, slik at den kostbare prognoseinnsatsen rettes mot A/X-modellene.
+- **Multi-echelon-koordinering** (Ch05 §4): basisvarer-policy mellom Skoringen Råholt og leverandøren ved deling av rullerende prognose.
+- **ML-prognose ved utvidet datavolum** (Ch01 §5): LightGBM/gradient boosting på SKU/dag-nivå når datamengden vokser tilstrekkelig (typisk fra 2027 og fremover).
+
+**Lavere prioritet (større innsats eller mer spesialisert anvendelse):**
+- **UFLP-evaluering av eksternt lager** (Ch04 §3): kvantifiser om det eksterne lageret er økonomisk berettiget under reduserte sesongtopper.
+- **Slotting-optimalisering** (Ch07 §3): tilordne hyllene basert på SKU-omløp.
+- **Returmodellering** (Ch09 §3, §4 og §5): separat tidsserie for returer med Weibull-levetid; disposisjonsbeslutning (selge ut, returnere, donere) for sesongrest.
+- **Leverandørvalg AHP+TOPSIS** (Ch10 §3): formalisere vurderingen av alternative leverandører med kortere ledetid.
+- **Revenue sharing-kontrakt** (Ch05 §5): forhandle frem risikodelingsavtale der overskuddslager kan returneres mot delvis kreditt.
+- **Robust optimalisering** (Ch11 §4): minimax regret-strategi som alternativ til newsvendor når SARIMA-prognosen har høy varians (f.eks. trendskift).
+- **Stresstest** (Ch11 §5): hvordan modellen reagerer på sjokk som lockdown, leverandørbrudd eller plutselig motskift.
+
+### 6.5 Avsluttende refleksjon
+Bachelorprosjektet har illustrert et klassisk tema i logistikkforskningen: at relativt enkle, etablerte modeller (SARIMA fra 1970-tallet, newsvendor fra 1900-tallet) kan gi betydelige praktiske gevinster når de anvendes systematisk på reelle data. Det er ikke kompleksiteten i modellen som driver gevinsten, men disiplinen i å bytte fra erfaringsbasert til datadrevet beslutningstaking. For en mindre detaljhandelsbedrift som Skoringen Råholt er denne overgangen tilgjengelig med moderate ressurser – kostnaden er primært tid til datafangst og opplæring, ikke kapital.
+
+Samtidig har prosjektet vist hvor viktig det er å være presis om hvilket problem som faktisk skal løses. Vår opprinnelige problemformulering om "Just-in-Time" var basert på en feilaktig antakelse om at bestillingsfrekvensen var en valgfri parameter. Ved å avklare bransjebetingelsene tidlig nok i prosessen kunne vi reformulere problemet til newsvendor-rammeverket, som passer langt bedre til den reelle situasjonen. Dette understreker betydningen av tett dialog med kunden og av å være villig til å justere modellen når premissene endrer seg – et av de viktigste pedagogiske bidragene fra prosjektet.
+
+---
+
+## 7. Referanser
+
+### Pensum (LOG650-kompendiet)
+LOG650-kompendiet, *Kvantitative metoder i logistikk* (Høgskolen i Molde, 2026). Lokal sti: `003_referanser/Kompendium/`. Innholdsfortegnelse: `003_referanser/Kompendium/00_INDEX.md`. Av kompendiets 33 seksjoner anvendes følgende 22 aktivt – jf. mappingtabellen i §2.6:
+
+**Kapittel 1 – Prognose og etterspørsel**
+- Ch01 §3: Trend og sesongvariasjon (SARIMA-pipeline).
+- Ch01 §4: Eksterne faktorer og kampanjer (ARIMAX).
+- Ch01 §5: Mange variabler (LightGBM / gradient boosting).
+
+**Kapittel 2 – Lagerstyring under usikkerhet**
+- Ch02 §3: Multi-produkt (Q,R) med delt kapasitet.
+- Ch02 §4: Flerlokasjon stokastisk programmering.
+- Ch02 §5: Data-driven inventory classification (ABC/XYZ).
+
+**Kapittel 3 – Produksjonsplanlegging**
+- Ch03 §5: MRP med lotstørrelse.
+
+**Kapittel 4 – Distribusjon og fasiliteter**
+- Ch04 §3: Uncapacitated Facility Location Problem (UFLP).
+
+**Kapittel 5 – Forsyningskjedekoordinering**
+- Ch05 §3: Bullwhip-simulering.
+- Ch05 §4: Multi-echelon lagerstyring (Clark-Scarf).
+- Ch05 §5: Newsvendor og kontraktstruktur.
+
+**Kapittel 7 – Lager og plukk**
+- Ch07 §3: Slotting (class-based storage).
+- Ch07 §5: Integrert lagerplanlegging.
+
+**Kapittel 8 – Bærekraft**
+- Ch08 §5: Integrert grønn forsyningskjede.
+
+**Kapittel 9 – Returlogistikk**
+- Ch09 §3: Reverse-nettverksdesign.
+- Ch09 §4: Weibull-retur (returprognoser med levetidsanalyse).
+- Ch09 §5: Disposisjonsbeslutning for returnerte produkter.
+
+**Kapittel 10 – Innkjøp**
+- Ch10 §3: AHP + TOPSIS for leverandørvalg.
+- Ch10 §4: Quantity Discount EOQ.
+
+**Kapittel 11 – Risiko og robusthet**
+- Ch11 §3: Monte Carlo-risikoanalyse.
+- Ch11 §4: Robust optimization (minimax regret).
+- Ch11 §5: Stresstest av forsyningskjede.
+
+### Akademisk litteratur
+- Box, G. E. P., Jenkins, G. M., Reinsel, G. C., & Ljung, G. M. (2015). *Time series analysis: Forecasting and control* (5. utg.). Wiley.
+- Chopra, S., & Meindl, P. (2016). *Supply chain management: Strategy, planning, and operation* (6. utg.). Pearson.
+- Christopher, M. (2016). *Logistics & supply chain management* (5. utg.). Pearson.
+- Forrester, J. W. (1961). *Industrial dynamics.* MIT Press.
+- Harris, F. W. (1913). How many parts to make at once. *Factory: The Magazine of Management, 10*(2), 135–136.
+- Hyndman, R. J., & Athanasopoulos, G. (2021). *Forecasting: Principles and practice* (3. utg.). OTexts. https://otexts.com/fpp3/
+- Lee, H. L., Padmanabhan, V., & Whang, S. (1997). Information distortion in a supply chain: The bullwhip effect. *Management Science, 43*(4), 546–558.
+- Lv, Z., Zhao, W., Liu, Y., Wu, J., Hou, M., & Liu, F. (2023). Clothing sales forecast considering weather information. *Applied Sciences, 13*(1), 40. https://doi.org/10.3390/app13010040
+- Petruzzi, N. C., & Dada, M. (1999). Pricing and the newsvendor problem: A review with extensions. *Operations Research, 47*(2), 183–194. https://www.jstor.org/stable/223067
+- Ramos, P., Santos, N., & Rebelo, R. (2015). Performance of state space and ARIMA models for consumer retail sales forecasting. *Computers & Industrial Engineering, 80*, 151–163. https://doi.org/10.1016/j.cie.2014.12.007
+- Silver, E. A., Pyke, D. F., & Thomas, D. J. (2016). *Inventory and production management in supply chains* (4. utg.). CRC Press.
+- Slack, N., & Brandon-Jones, A. (2019). *Operations management* (9. utg.). Pearson.
+
+---
+
+## 8. Vedlegg
+
+### Vedlegg A – Variabler og notasjon
+Tabellen samler de matematiske symbolene som er brukt i oppgaven, med beskrivelse, enhet og kapittelreferanse for første introduksjon.
+
+| Symbol | Beskrivelse | Enhet | Introdusert |
+|---|---|---|---|
+| $Y_t$ | Observert salg i måned $t$ | par/mnd | §2.2 |
+| $\hat{Y}_t$ | Prognose for måned $t$ | par/mnd | §3.4 |
+| $T_t, S_t, C_t, I_t$ | Trend, sesong, syklus, irregulær komponent | par/mnd | §2.2 |
+| $p, d, q$ | SARIMA ikke-sesongmessige ledd (AR, diff, MA) | – | §2.3 |
+| $P, D, Q$ | SARIMA sesongmessige ledd | – | §2.3 |
+| $s$ (i SARIMA) | Periodelengde sesong | mnd | §2.3 |
+| AIC | Akaike Information Criterion | – | §2.3 |
+| $D$ | Stokastisk etterspørsel (sesong) | par | §2.4 |
+| $\mu_i$ | Forventet sesongetterspørsel for sesong $i$ | par | §3.5 |
+| $\sigma_i$ | Standardavvik for sesongetterspørsel | par | §3.5 |
+| $\sigma_{\text{mnd}}$ | Prognoseusikkerhet pr måned (RMSE) | par | §3.5 |
+| $z_\alpha$ | Standard-normal-kvantil for servicenivå $\alpha$ | – | §2.4 |
+| $\Phi^{-1}$ | Invers av standard-normalfordelingen | – | §2.4 |
+| $\text{CR}$ | Kritisk forhold $(p-w)/(p-s)$ | – | §2.4 |
+| $C_u$ | Underbestillingskostnad ($p-w$) | NOK/par | §2.4 |
+| $C_o$ | Overbestillingskostnad ($w-s$) | NOK/par | §2.4 |
+| $p$ (pris) | Utsalgspris til sluttkunde | NOK/par | §2.4 |
+| $w$ | Innkjøpspris fra leverandør (engros) | NOK/par | §2.4 |
+| $s$ (verdi) | Restverdi etter sesong | NOK/par | §2.4 |
+| $Q^*$ | Optimal sesongbestilling (newsvendor) | par | §2.4 |
+| $Q_{\text{naiv}}$ | Sesongbestilling under naiv strategi | par | §3.5 |
+| $\Pi_k$ | Bruttoresultat for strategi $k$ | NOK | §3.6 |
+| $L_k$ | Alternativkostnad ved tapt salg for strategi $k$ | NOK | §3.6 |
+| $N_k$ | Netto effekt for strategi $k$ | NOK | §3.6 |
+
+### Vedlegg B – Datasett, kode og artefakter
+**Datafiler (`004_data/`):**
+
+| Fil | Innhold |
+|---|---|
+| `skoringen_monthly_clean.csv` | 36 månedsobservasjoner 2023–2025 (basis for tidsserieanalyse) |
+| `skoringen_salgsdata_clean.csv` | Dagsnivå salgsregistreringer etter rensing |
+| `forecast_results.csv` | SARIMA/ARIMA/ETS/faktiske verdier for testperioden 2025 |
+| `Manedsrapport2023.pdf` til `Manedsrapport2025.pdf` | Rådata månedsrapporter |
+| `Dagsalgsrapport*.pdf` | ~40 daglige rapporter som rådata for parser |
+
+**Kode (`006_analysis/`):**
+
+| Fil | Funksjon |
+|---|---|
+| `pdf_to_csv_decoder.py` | Generell PDF-parser for daglige rapporter |
+| `decode_monthly_reports.py` | Spesialisert parser for månedsrapporter |
+| `clean_sales_data.py` | Datavasking på dagsnivå |
+| `prepare_timeseries.py` | Aggregering til månedsfrekvens |
+| `demand_forecasting.py` | SARIMA/ETS/ARIMA-modellestimering med out-of-sample-validering |
+| `inventory_optimization.py` | Lagerstyring under usikkerhet (legacy) |
+| `sesongnewsvendor.py` | **Hovedanalyse:** newsvendor-bestilling pr sesong |
+| `verify_numbers.py` | Verifikasjonsskript som beregner alle tall i rapporten |
+| `run_full_pipeline.py` | Orkestrering: kjører hele pipelinen i sekvens |
+| `visualize_trends.py` | Beskrivende figurer (omsetning, sesongtrender) |
+
+**Artefakter (`013_gjennomforing/`):**
+
+| Fil | Innhold |
+|---|---|
+| `newsvendor_resultater.json` | Strukturerte tall fra siste kjøring av sesongnewsvendor |
+| `valideringsrapport.md` | Statistiske diagnostikk-resultater (ADF, Ljung-Box, RMSE etc.) |
+| `pipeline_dokumentasjon.md` | Teknisk dokumentasjon av pipelinen |
+| `brukermanual_skoringen.md` | Brukermanual for daglig leder |
+| `prosjektlogg.md` | Kronologisk logg av prosjektarbeidet |
+| `visuals/` | Alle figurer som er referert i rapporten |
+
+### Vedlegg C – Reproduksjon
+For å reprodusere alle tall og figurer i rapporten:
+
+**1. Oppsett:**
+```bash
+git clone <repo>
+cd G04-gruppe-4.5
+pip install -r requirements.txt
+```
+
+**2. Kjør pipelinen i sekvens:**
+```bash
+# Steg 1: ekstraher data fra PDF og estimer SARIMA
+python 006_analysis/run_full_pipeline.py
+
+# Steg 2: beregn newsvendor-bestillinger og økonomi
+python 006_analysis/sesongnewsvendor.py
+
+# Steg 3: verifiser alle tall i rapporten
+python 006_analysis/verify_numbers.py
+```
+
+**3. Forventet output:**
+- Konsoll: alle nøkkeltall (MAE, RMSE, $Q^*$, økonomisk effekt) printes ut.
+- Filer: oppdaterte CSV-er i `004_data/`, oppdaterte JSON-resultater i `013_gjennomforing/`, oppdaterte figurer i `013_gjennomforing/visuals/`.
+
+**4. Verifikasjon:**
+Output fra `verify_numbers.py` skal stemme overens med tallene i Tabell 4.2 (prognosepresisjon), Tabell 4.3 (sesongbestilling), Tabell 4.4 (økonomisk effekt) og Tabell 4.5 (sensitivitet). Eventuelle avvik indikerer at data eller kode er endret siden rapporten ble skrevet.
+
+### Vedlegg D – Pensumkompendiets struktur
+LOG650-pensumet (`003_referanser/Kompendium/`) er strukturert som 33 selvstendige Python-prosjekter, ett per kapittelseksjon. Hvert prosjekt følger samme struktur:
+
+```
+chXX-secYY-<emne>/
+├── README.md                  # Kort beskrivelse
+├── pyproject.toml             # Avhengigheter (uv-styrt)
+├── data/                      # Datasett (genereres typisk i step01)
+├── output/                    # Figurer og JSON-resultater
+└── src/
+    ├── step01_datainnsamling.py
+    ├── step02_<analyse>.py
+    ├── ...
+    └── stepNN_anbefaling.py
+```
+
+Denne strukturen har vi tatt direkte inspirasjon fra i vår egen `006_analysis/`-pipeline: hver fase er et selvstendig skript, dataflyten skjer via filer (CSV/JSON) på disk, og resultatene kan inspiseres uavhengig av om alle stegene er kjørt. For studenter eller forskere som ønsker å utvide oppgaven, er det dermed en direkte sammenheng mellom vår kode og pensumkodens organisering, hvilket gjør det enklere å adoptere f.eks. ARIMAX-implementasjonen fra Ch01 §4 eller multi-echelon-modellen fra Ch05 §4.

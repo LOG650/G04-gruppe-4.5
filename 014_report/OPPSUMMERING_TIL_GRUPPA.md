@@ -42,7 +42,7 @@ Repoet ligger på `github.com/LOG650/G04-gruppe-4.5`. Mappestrukturen er lagt op
 | `011_proposal/` | Prosjektforslaget |
 | `012_plan/` | Prosjektplan, risiko, interessenter, Gantt |
 | `013_gjennomforing/` | Brukermanual, valideringsrapport, alle figurer |
-| `014_report/` | **Selve bacheloroppgaven** (`Bacheloroppgave_Skoringen_KOMPLETT.md`) |
+| `014_report/` | **Selve forskningsoppgaven** (`Forskningsoppgave_Gruppe_4.5.md`) |
 
 ---
 
@@ -62,8 +62,9 @@ Til sammen brukes **22 av 33 pensumseksjoner aktivt** i oppgaven. En oversiktsta
 
 ## Vil dere lese rapporten?
 
-1. **Som vanlig tekst:** åpne `014_report/Bacheloroppgave_Skoringen_KOMPLETT.md` i en hvilken som helst tekstleser (eller GitHub viser den direkte).
-2. **Som pen, ferdig-formatert side med matematikk og figurer:** dobbeltklikk `014_report/Bacheloroppgave_Skoringen_KOMPLETT.html` — den åpnes i nettleseren og ser ut som en ferdig oppgave.
+1. **Som vanlig tekst:** åpne `014_report/Forskningsoppgave_Gruppe_4.5.md` i en hvilken som helst tekstleser (eller GitHub viser den direkte).
+2. **Som pen, ferdig-formatert side med matematikk og figurer:** dobbeltklikk `014_report/Forskningsoppgave_Gruppe_4.5.html` — den åpnes i nettleseren og ser ut som en ferdig oppgave.
+3. **Som PDF, klar til å sendes/skrives ut:** `014_report/Forskningsoppgave_Gruppe_4.5.pdf`.
 
 ---
 
