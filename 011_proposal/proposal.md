@@ -63,4 +63,4 @@ Studien modellerer ikke:
 - Ingen direkte økonomiske kostnader; ressursbruk måles i arbeidstimer.
 
 ## Pensum og litteraturforankring
-Primær teorigrunnlag fra LOG650-pensum *Kvantitative metoder i logistikk* (Rekdal, 2026), særlig Ch01 §3 (SARIMA), Ch05 §5 (Newsvendor) og Ch05 §3 (Bullwhip). Akademisk støttelitteratur er nærmere beskrevet i hovedrapportens kapittel 7 og i `003_referanser/AKADEMISK_LITTERATUR.md`.
+Etter veiledning fra foreleser (april 2026) brukes LOG650-kompendiet *Kvantitative metoder i logistikk* (Rekdal, 2026) som arbeidsredskap – særlig Ch01 §3 (SARIMA), Ch05 §5 (Newsvendor) og Ch05 §3 (Bullwhip) – mens metodevalg siteres til etablerte primærverk: Pinedo (2016, scheduling), Hartmann & Briskorn (2010, RCPSP), Vose (2008, Monte Carlo-risiko), Efron & Tibshirani (1993, bootstrap) og Puchinger & Raidl (2005, hybride metoder). Full litteraturliste i hovedrapportens kapittel 7 og i `003_referanser/AKADEMISK_LITTERATUR.md`.
