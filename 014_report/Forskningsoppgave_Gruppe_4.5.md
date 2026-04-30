@@ -53,39 +53,39 @@
 <div class="toc-row toc-l2"><span class="toc-text">2.4 Newsvendor-modellen: optimal bestilling under usikkerhet</span><span class="toc-dots"></span><span class="toc-page">13</span></div>
 <div class="toc-row toc-l2"><span class="toc-text">2.5 Bullwhip-effekten og forsyningskjedekoordinering</span><span class="toc-dots"></span><span class="toc-page">15</span></div>
 <div class="toc-row toc-l2"><span class="toc-text">2.6 Kobling mellom oppgave, primærkilder og pensumkompendiet</span><span class="toc-dots"></span><span class="toc-page">16</span></div>
-<div class="toc-row toc-l1"><span class="toc-text">3. Metode</span><span class="toc-dots"></span><span class="toc-page">18</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">3.1 Forskningsdesign og vitenskapsteoretisk forankring</span><span class="toc-dots"></span><span class="toc-page">18</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">3.2 Datafangst (FS1): Fra ustrukturerte PDF til strukturert tidsserie</span><span class="toc-dots"></span><span class="toc-page">19</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">3.3 Datavasking og preparering</span><span class="toc-dots"></span><span class="toc-page">20</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">3.4 Modellering og modellvalg (FS2)</span><span class="toc-dots"></span><span class="toc-page">21</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">3.5 Newsvendor-implementering (FS3)</span><span class="toc-dots"></span><span class="toc-page">22</span></div>
+<div class="toc-row toc-l1"><span class="toc-text">3. Metode</span><span class="toc-dots"></span><span class="toc-page">19</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">3.1 Forskningsdesign og vitenskapsteoretisk forankring</span><span class="toc-dots"></span><span class="toc-page">19</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">3.2 Datafangst (FS1): Fra ustrukturerte PDF til strukturert tidsserie</span><span class="toc-dots"></span><span class="toc-page">20</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">3.3 Datavasking og preparering</span><span class="toc-dots"></span><span class="toc-page">21</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">3.4 Modellering og modellvalg (FS2)</span><span class="toc-dots"></span><span class="toc-page">22</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">3.5 Newsvendor-implementering (FS3)</span><span class="toc-dots"></span><span class="toc-page">23</span></div>
 <div class="toc-row toc-l2"><span class="toc-text">3.6 Økonomisk evaluering (FS4)</span><span class="toc-dots"></span><span class="toc-page">24</span></div>
-<div class="toc-row toc-l1"><span class="toc-text">4. Empirisk analyse og resultater</span><span class="toc-dots"></span><span class="toc-page">24</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">4.1 Beskrivende analyse av datasettet (FS1)</span><span class="toc-dots"></span><span class="toc-page">24</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">4.2 Prognosepresisjon (FS2)</span><span class="toc-dots"></span><span class="toc-page">27</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">4.3 Newsvendor-bestilling (FS3)</span><span class="toc-dots"></span><span class="toc-page">29</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">4.4 Økonomisk effekt og lagerprofil (FS4)</span><span class="toc-dots"></span><span class="toc-page">31</span></div>
-<div class="toc-row toc-l1"><span class="toc-text">5. Diskusjon</span><span class="toc-dots"></span><span class="toc-page">34</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">5.1 Informasjon som beslutningsstøtte – ikke som lagererstatning</span><span class="toc-dots"></span><span class="toc-page">34</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">5.2 Bullwhip-effekten og leverandørsamarbeid</span><span class="toc-dots"></span><span class="toc-page">36</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">5.3 Begrensninger og forutsetninger</span><span class="toc-dots"></span><span class="toc-page">36</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">5.4 Bærekraft og samfunnsmessige implikasjoner</span><span class="toc-dots"></span><span class="toc-page">38</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">5.5 Implementering, endringsledelse og organisasjonskultur</span><span class="toc-dots"></span><span class="toc-page">38</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">5.6 Studiens bidrag til faget</span><span class="toc-dots"></span><span class="toc-page">39</span></div>
-<div class="toc-row toc-l1"><span class="toc-text">6. Konklusjon og anbefalinger</span><span class="toc-dots"></span><span class="toc-page">40</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">6.1 Hovedfunn</span><span class="toc-dots"></span><span class="toc-page">40</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">6.2 Svar på forskningsspørsmålene</span><span class="toc-dots"></span><span class="toc-page">40</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">6.3 Anbefalinger til Skoringen Råholt</span><span class="toc-dots"></span><span class="toc-page">41</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">6.4 Videre arbeid</span><span class="toc-dots"></span><span class="toc-page">42</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">6.5 Avsluttende refleksjon</span><span class="toc-dots"></span><span class="toc-page">43</span></div>
-<div class="toc-row toc-l1"><span class="toc-text">7. Referanser</span><span class="toc-dots"></span><span class="toc-page">44</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">Pensum (LOG650-kompendiet)</span><span class="toc-dots"></span><span class="toc-page">44</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">Akademisk litteratur</span><span class="toc-dots"></span><span class="toc-page">45</span></div>
-<div class="toc-row toc-l1"><span class="toc-text">8. Vedlegg</span><span class="toc-dots"></span><span class="toc-page">46</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">Vedlegg A – Variabler og notasjon</span><span class="toc-dots"></span><span class="toc-page">46</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">Vedlegg B – Datasett, kode og artefakter</span><span class="toc-dots"></span><span class="toc-page">47</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">Vedlegg C – Reproduksjon</span><span class="toc-dots"></span><span class="toc-page">49</span></div>
-<div class="toc-row toc-l2"><span class="toc-text">Vedlegg D – Pensumkompendiets struktur</span><span class="toc-dots"></span><span class="toc-page">50</span></div>
+<div class="toc-row toc-l1"><span class="toc-text">4. Empirisk analyse og resultater</span><span class="toc-dots"></span><span class="toc-page">25</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">4.1 Beskrivende analyse av datasettet (FS1)</span><span class="toc-dots"></span><span class="toc-page">25</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">4.2 Prognosepresisjon (FS2)</span><span class="toc-dots"></span><span class="toc-page">28</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">4.3 Newsvendor-bestilling (FS3)</span><span class="toc-dots"></span><span class="toc-page">30</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">4.4 Økonomisk effekt og lagerprofil (FS4)</span><span class="toc-dots"></span><span class="toc-page">32</span></div>
+<div class="toc-row toc-l1"><span class="toc-text">5. Diskusjon</span><span class="toc-dots"></span><span class="toc-page">35</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">5.1 Informasjon som beslutningsstøtte – ikke som lagererstatning</span><span class="toc-dots"></span><span class="toc-page">35</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">5.2 Bullwhip-effekten og leverandørsamarbeid</span><span class="toc-dots"></span><span class="toc-page">37</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">5.3 Begrensninger og forutsetninger</span><span class="toc-dots"></span><span class="toc-page">37</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">5.4 Bærekraft og samfunnsmessige implikasjoner</span><span class="toc-dots"></span><span class="toc-page">39</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">5.5 Implementering, endringsledelse og organisasjonskultur</span><span class="toc-dots"></span><span class="toc-page">39</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">5.6 Studiens bidrag til faget</span><span class="toc-dots"></span><span class="toc-page">40</span></div>
+<div class="toc-row toc-l1"><span class="toc-text">6. Konklusjon og anbefalinger</span><span class="toc-dots"></span><span class="toc-page">41</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">6.1 Hovedfunn</span><span class="toc-dots"></span><span class="toc-page">41</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">6.2 Svar på forskningsspørsmålene</span><span class="toc-dots"></span><span class="toc-page">42</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">6.3 Anbefalinger til Skoringen Råholt</span><span class="toc-dots"></span><span class="toc-page">42</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">6.4 Videre arbeid</span><span class="toc-dots"></span><span class="toc-page">43</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">6.5 Avsluttende refleksjon</span><span class="toc-dots"></span><span class="toc-page">45</span></div>
+<div class="toc-row toc-l1"><span class="toc-text">7. Referanser</span><span class="toc-dots"></span><span class="toc-page">45</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">Pensum (LOG650-kompendiet) – arbeidsredskap</span><span class="toc-dots"></span><span class="toc-page">45</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">Akademisk litteratur</span><span class="toc-dots"></span><span class="toc-page">47</span></div>
+<div class="toc-row toc-l1"><span class="toc-text">8. Vedlegg</span><span class="toc-dots"></span><span class="toc-page">48</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">Vedlegg A – Variabler og notasjon</span><span class="toc-dots"></span><span class="toc-page">48</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">Vedlegg B – Datasett, kode og artefakter</span><span class="toc-dots"></span><span class="toc-page">49</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">Vedlegg C – Reproduksjon</span><span class="toc-dots"></span><span class="toc-page">51</span></div>
+<div class="toc-row toc-l2"><span class="toc-text">Vedlegg D – Pensumkompendiets struktur</span><span class="toc-dots"></span><span class="toc-page">52</span></div>
 </div>
 
 ---
