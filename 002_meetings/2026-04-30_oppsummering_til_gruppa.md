@@ -79,19 +79,55 @@ Det som har endret seg, er **hvor seriøst rapporten ser ut for sensor**. Når s
 
 ---
 
+## Steg 5 — Korrekturlesing og småretting (gjort etterpå)
+
+Etter at vi var ferdige med kildeendringene, gikk vi en runde til gjennom rapporten for å fange opp **skrivefeil og inkonsistenser**. Dette er ikke nytt fagstoff — det er kun finsliping av språket. Eksempler på hva vi rettet:
+
+- **Skrivefeil:** *"sprangrøret"* → *"sprangbrettet"*, *"en model"* → *"en modell"*, *"annektivvirkningen"* → *"nettovirkningen"*.
+- **Forkortelser ut, fullstendige ord inn:** *"to bestillinger pr år"* → *"to bestillinger per år"*. Forkortelsen "pr" er hverdagslig; "per" er det som hører hjemme i en akademisk tekst.
+- **Kjønnskonsistens på substantiv:** *"den mest brukte kriteriet"* → *"det mest brukte kriteriet"*. På norsk er *kriterium* intetkjønn, så det skal være "det", ikke "den".
+- **Kryssreferanser i samme rapport:** Da vi byttet rundt på rekkefølgen i kapittel 2 (etter foreleserens råd), ble enkelte interne henvisninger pekende feil — for eksempel sto det "se kapittel 4.4.1" der det riktige var "se kapittel 4.4 (Tabell 4.5)". Slike pekere er nå ryddet opp.
+- **Tilleggskilde:** Vi har lagt til **Chopra & Meindl (2016)** som støttekilde i innledningen, ved siden av Christopher (2016). Begge er klassiske lærebøker i logistikkfaget, og det styrker forankringen å nevne begge.
+
+**Hvorfor dette gjøres:** Når sensor leser oppgaven, er småfeil noe av det første øyet legger merke til. Selv om innholdet er bra, kan slurv i språket signalisere at man ikke har lest gjennom det man har skrevet. Vi vil at sensor skal kunne fokusere på *innholdet*, ikke bli distrahert av rare setninger.
+
+---
+
+## Steg 6 — Vi laget likevel en oppdatert peer-to-peer-leveranse
+
+Tidligere i dag mente jeg vi skulle vente med en ny `peer_to_peer`-snapshot. Men siden vi har gjort både kildebytte (Steg 1–4) og en fullstendig korrekturrunde (Steg 5), er forskjellen mellom gårsdagens og dagens versjon nå stor nok til at det er verdt å fryse en ny.
+
+Den nye snapshotten ligger i:
+- `014_report/peer_to_peer_2026-04-30/Forskningsoppgave_Gruppe_4.5.pdf`
+
+Det er denne PDF-en dere kan referere til hvis dere skal se "akkurat hvordan rapporten så ut den 30. april".
+
+---
+
 ## Filer som er endret i dag
 
 | Fil | Hva som skjedde |
 |---|---|
-| `014_report/Forskningsoppgave_Gruppe_4.5.md` | 7 steder i teksten + referanselisten |
+| `014_report/Forskningsoppgave_Gruppe_4.5.md` | Kildebytte + korrekturlesing (≈40 steder totalt) |
+| `014_report/Forskningsoppgave_Gruppe_4.5.html` | Speiler markdown-endringene |
+| `014_report/peer_to_peer_2026-04-30/Forskningsoppgave_Gruppe_4.5.pdf` | Ny frosset leveranse for 30. april |
 | `003_referanser/AKADEMISK_LITTERATUR.md` | Ny seksjon med 5 primærkilder, omdøpt seksjonsnummer |
 | `011_proposal/proposal.md` | Ett avsnitt oppdatert |
 
 ---
 
+## Hvordan åpne dagens leveranse
+
+For dere som vil se det nyeste:
+
+1. **Den fulle rapporten:** `014_report/peer_to_peer_2026-04-30/Forskningsoppgave_Gruppe_4.5.pdf`
+2. **Denne oppsummeringen som PDF:** `002_meetings/2026-04-30_oppsummering_til_gruppa.pdf`
+
+---
+
 ## Trenger dere noe?
 
-Hvis dere vil se selve referanselisten, åpne PDF-en og bla til siste kapittel ("Referanser"). Der ser dere alle bøkene og artiklene oppgaven viser til — nå med de fem nye standardverkene.
+Hvis dere vil se selve referanselisten, åpne PDF-en og bla til siste kapittel ("Referanser"). Der ser dere alle bøkene og artiklene oppgaven viser til — nå med de fem nye standardverkene og Chopra & Meindl (2016) lagt til.
 
 Spør gjerne hvis noe er uklart.
 
