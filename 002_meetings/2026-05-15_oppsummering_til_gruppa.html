@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
 <meta charset="utf-8">
-<title>Oppsummering — Litteratur og kilder</title>
+<title>Forbedring av rapporten etter selvevalueringen</title>
 <style>
 @page {
   size: A4;
@@ -254,16 +254,16 @@ pre code {
 
 <div class="title-block">
   <div class="title-eyebrow">LOG650 &middot; Forskningsprosjekt i logistikk &middot; Vårsemesteret 2026</div>
-  <div class="title-main">Oppsummering — Litteratur og kilder</div>
-  <div class="title-sub">Oppsummering til gruppa fra arbeidsdagen</div>
+  <div class="title-main">Forbedring av rapporten etter selvevalueringen</div>
+  <div class="title-sub">Oppsummering til gruppa — Gruppe 4.5</div>
   <div class="title-meta">
     <div class="meta-item">
       <div class="meta-label">Dokument-ID</div>
-      <div class="meta-value">2026-04-30_oppsummering_til_gruppa</div>
+      <div class="meta-value">2026-05-15</div>
     </div>
     <div class="meta-item">
       <div class="meta-label">Dato</div>
-      <div class="meta-value">Torsdag 30. april 2026</div>
+      <div class="meta-value">15. mai 2026</div>
     </div>
     <div class="meta-item">
       <div class="meta-label">Gruppe</div>
@@ -277,102 +277,276 @@ pre code {
 </div>
 
 <div class="content">
-<h1>Oppsummering — torsdag 30. april 2026</h1>
-<p><strong>Gruppe 4.5 — det vi har gjort med oppgaven i dag</strong></p>
+<h1>Oppsummering — fredag 15. mai 2026</h1>
+<p><strong>Gruppe 4.5 — det vi har gjort i dag</strong></p>
 <blockquote>
-<p>Denne oppsummeringen handler <strong>kun om det vi har endret i dag</strong>. Hvis dere vil vite hva oppgaven generelt går ut på, se <code>002_meetings/2026-04-27_oppsummering_til_gruppa.md</code>. Den forklarer prosjektet steg for steg.</p>
+<p>I dag har vi tatt selvevalueringen fra i går og brukt den som arbeidsliste. Alle de syv prioriterte punktene er fikset, og de fleste av finpussforslagene er adressert. <strong>Forskningsoppgaven er reelt endret i dag</strong> — både tekst og tall.</p>
 </blockquote>
-<p>Dagens jobb handlet om <strong>hvilke bøker og artikler vi viser til</strong> i rapporten — altså referansene. Ingenting i selve resultatene eller metodene har endret seg. Det er språket og kildehenvisningene som er strammet opp.</p>
 <hr />
-<h2>Bakgrunn — hvorfor vi gjorde dette</h2>
-<p>Foreleseren sa noe viktig i april: <em>Pensumkompendiet (de 33 kapitlene fra LOG650-faget) skal vi bruke som </em><em>arbeidsverktøy</em><em> når vi skriver — for å slå opp, finne struktur, og lære språket. Men når vi viser til en kilde i selve oppgaven, skal vi peke til de </em><em>etablerte fagbøkene</em><em> som hele verdens forskere bruker, ikke til vårt egne kompendium.</em></p>
-<p>Tenk dere at dere skriver om Norge i en bok. Da sier dere ikke <em>"se forelesningsnotatene mine"</em> — dere sier <em>"se Store norske leksikon"</em>. Det er samme prinsipp.</p>
-<p>Vi måtte derfor finne de "ekte" bøkene bak hver metode vi bruker, og endre referansene fra <em>"Pensumets kapittel X §Y"</em> til <em>"Forfatter (Årstall)"</em>.</p>
+<h2>Bakgrunn — hva selvevalueringen sa</h2>
+<p>I går (14. mai) lagde vi en streng selvevaluering av vår egen rapport, hvor vi brukte samme strenge briller som vi brukte på G03's rapport. Selvevalueringen identifiserte syv prioriterte punkter, hvorav tre var kritiske:</p>
+<ol>
+<li><strong>Sigma-problemet</strong> — vi brukte tall fra 2025 til å regne ut usikkerhet, og brukte så samme tall til å vurdere økonomien for 2025</li>
+<li><strong>Etikk var ikke nevnt</strong> — vi navngir både bedriften og daglig leder uten å si noe om samtykke</li>
+<li><strong>Figurer i PDF</strong> — relative stier kunne potensielt bli tomme firkanter</li>
+</ol>
+<p>I tillegg var det fire mer "kosmetiske" punkter: Diebold-Mariano-test, avrunding av hovedfunnet, kondensering av lengden, og eksplisitt forskningshull.</p>
+<p>I dag har vi gått systematisk gjennom alle ti punkter (de syv prioriterte pluss tre tillegg fra finpusslisten).</p>
 <hr />
-<h2>Steg 1 — Vi fant fem "standardverk" som dekker alle metodene våre</h2>
-<p>Vi gikk gjennom oppgaven og listet hvilke metoder vi bruker. Så fant vi den boka eller artikkelen som er <strong>selve standardreferansen</strong> for hver metode. Dette er fem stykker:</p>
+<h2>Del A — De tre kritiske fiksene</h2>
+<h3>1. Sigma-problemet er ryddet opp i</h3>
+<p>Dette var den største metodiske svakheten. Forklart enkelt: før i dag estimerte vi prognoseusikkerheten ($\sigma$) ut fra hvor mye SARIMA bommet på 2025-tallene, og brukte så det samme tallet for å regne ut hvor mye butikken burde bestilt — og evaluerte det mot de samme 2025-tallene. Det er sirkulær resonnement.</p>
+<p><strong>Hva vi gjorde:</strong> Endret <code>demand_forecasting.py</code> slik at den nå lagrer SARIMAs <em>in-sample-residualer</em> fra treningsperioden 2023–2024 (ikke testperioden 2025). <code>sesongnewsvendor.py</code> leser deretter dette tallet via en ny JSON-fil (<code>forecast_metrics.json</code>) og bruker det som $\sigma_\text{mnd}$.</p>
+<p><strong>Effekten på tallene:</strong></p>
 <table>
 <thead>
 <tr>
-<th>Hva metoden handler om</th>
-<th>Kilden vi nå viser til</th>
+<th>Måling</th>
+<th style="text-align: right;">Før</th>
+<th style="text-align: right;">Etter</th>
+<th style="text-align: right;">Endring</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Planlegging og bestillingsstørrelse (når og hvor mye)</td>
-<td><strong>Pinedo (2016)</strong> — <em>Scheduling: Theory, algorithms, and systems</em></td>
+<td>$\sigma_\text{mnd}$ (prognoseusikkerhet)</td>
+<td style="text-align: right;">222,2 par</td>
+<td style="text-align: right;">182,9 par</td>
+<td style="text-align: right;">–17,7 %</td>
 </tr>
 <tr>
-<td>Hvordan dele lite hylleplass mellom mange varer</td>
-<td><strong>Hartmann &amp; Briskorn (2010)</strong> — om "ressursbegrenset planlegging"</td>
+<td>Sikkerhetslager per sesong</td>
+<td style="text-align: right;">367 par</td>
+<td style="text-align: right;">302 par</td>
+<td style="text-align: right;">–17,7 %</td>
 </tr>
 <tr>
-<td>Risikoanalyse med tilfeldige simuleringer (Monte Carlo)</td>
-<td><strong>Vose (2008)</strong> — <em>Risk analysis: A quantitative guide</em></td>
+<td>$Q^*$ vår 2025</td>
+<td style="text-align: right;">6 030 par</td>
+<td style="text-align: right;">5 975 par</td>
+<td style="text-align: right;">–55 par</td>
 </tr>
 <tr>
-<td>Hvordan lage feilmarginer ut fra dataene selv</td>
-<td><strong>Efron &amp; Tibshirani (1993)</strong> — <em>An introduction to the bootstrap</em></td>
+<td>$Q^*$ høst 2025</td>
+<td style="text-align: right;">3 568 par</td>
+<td style="text-align: right;">3 468 par</td>
+<td style="text-align: right;">–100 par</td>
 </tr>
 <tr>
-<td>Hvordan kombinere ulike metoder smart</td>
-<td><strong>Puchinger &amp; Raidl (2005)</strong> — om hybride løsningsmetoder</td>
+<td>Estimert årlig gevinst</td>
+<td style="text-align: right;">713 621 NOK</td>
+<td style="text-align: right;">≈ 570 000 NOK</td>
+<td style="text-align: right;">–20 %</td>
+</tr>
+<tr>
+<td>Relativ gevinst</td>
+<td style="text-align: right;">+14,4 %</td>
+<td style="text-align: right;">+11,5 %</td>
+<td style="text-align: right;">–2,9 %p</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Hvorfor akkurat disse fem:</strong> De dekker tematisk alt vi gjør i oppgaven. Det er bedre å lene seg på fem solide, anerkjente kilder enn å spre seg tynt over mange.</p>
-<hr />
-<h2>Steg 2 — Vi byttet ut "Pensumets Ch10 §4" med "Pinedo (2016)" i selve teksten</h2>
-<p>I rapporten sto det tidligere setninger som dette:</p>
-<blockquote>
-<p><em>"Pensumets Ch10 §4 (kvantumsrabatt-EOQ) gir det formelle rammeverket for å forstå..."</em></p>
-</blockquote>
-<p>Nå står det:</p>
-<blockquote>
-<p><em>"Pinedo (2016) behandler slik sjelden, satsvis bestilling som et klassisk lot-sizing-problem..."</em></p>
-</blockquote>
-<p><strong>Hva endringen betyr:</strong> Vi gir samme forklaring, men nå nevner vi forskeren som faktisk skrev fagboka. Kompendiet nevnes bare som <em>"jf. kompendiets Ch10 §4 som pedagogisk oppslag"</em> — altså som et sted hvor leseren kan slå opp og se metoden vist enklere.</p>
-<p>Vi gjorde dette flere steder i kapittel 2 (om bullwhip-effekten, om EOQ, om RCPSP) og kapittel 4 (om hvordan vi sjekker at SARIMA-modellen vår er pålitelig).</p>
-<hr />
-<h2>Steg 3 — Vi ryddet i referanselisten bak i rapporten</h2>
-<p>I kapittel 7 (Referanser) gjorde vi to ting:</p>
-<ol>
-<li><strong>Lagt til de fem nye kildene</strong> alfabetisk i listen — Efron &amp; Tibshirani, Hartmann &amp; Briskorn, Pinedo, Puchinger &amp; Raidl, og Vose.</li>
-<li><strong>Skrevet en kort forklaring</strong> øverst i pensum-delen om at kompendiet brukes som arbeidsverktøy — ikke som primærkilde — og at sitatene går til de etablerte verkene.</li>
-</ol>
-<hr />
-<h2>Steg 4 — Vi oppdaterte to tilhørende dokumenter</h2>
-<p><strong>Filen <code>003_referanser/AKADEMISK_LITTERATUR.md</code></strong> (hvor vi fører liste over all litteratur):
-- La til en helt ny seksjon med de fem standardverkene øverst
-- Flyttet kompendium-listen ned til en ny seksjon kalt <em>"Kompendiet som arbeidsredskap"</em>
-- Skrev tydelig hvorfor: <em>"sitater i rapporten går til de etablerte verkene"</em></p>
-<p><strong>Filen <code>011_proposal/proposal.md</code></strong> (selve forskningsforslaget):
-- Oppdaterte avsnittet om litteraturforankring slik at det stemmer overens med endringen
-- Nå nevnes både kompendiet (som arbeidsredskap) og de fem primærkildene</p>
-<hr />
-<h2>Hva betyr alt dette for sluttresultatet?</h2>
-<p><strong>Ingenting har endret seg i tallene, modellene eller konklusjonene.</strong> SARIMA-prognosen er den samme. Newsvendor-bestillingen er den samme. Resultatene er de samme.</p>
-<p>Det som har endret seg, er <strong>hvor seriøst rapporten ser ut for sensor</strong>. Når sensor blar i referanselisten, ser de nå navn som Pinedo, Vose og Efron — bøker som er pensum på operasjonsanalyse-master rundt om i verden. Det signaliserer at vi har faglig tyngde og vet hvor metodene kommer fra opprinnelig.</p>
-<hr />
-<h2>Steg 5 — Korrekturlesing og småretting (gjort etterpå)</h2>
-<p>Etter at vi var ferdige med kildeendringene, gikk vi en runde til gjennom rapporten for å fange opp <strong>skrivefeil og inkonsistenser</strong>. Dette er ikke nytt fagstoff — det er kun finsliping av språket. Eksempler på hva vi rettet:</p>
+<p>Hovedfunnet er fortsatt <strong>substansielt og robust</strong> — gevinsten er ~570 000 NOK, ikke 0 — men den er mer ærlig nå. Tallet er heller ikke fryktelig presist, og det er det poenget: vi runder bevisst til "ca. 570 000 NOK" og "+11–12 %" i sammendrag og konklusjon. Selvevalueringen påpekte at å oppgi 713 621 NOK på et estimat med ±10–15 % usikkerhet er overpresist.</p>
+<h3>2. Etikk er nå dokumentert i §3.1</h3>
+<p>Vi la til et eget avsnitt om etiske hensyn under metodekapittelet. Hovedpunktene:</p>
 <ul>
-<li><strong>Skrivefeil:</strong> <em>"sprangrøret"</em> → <em>"sprangbrettet"</em>, <em>"en model"</em> → <em>"en modell"</em>, <em>"annektivvirkningen"</em> → <em>"nettovirkningen"</em>.</li>
-<li><strong>Forkortelser ut, fullstendige ord inn:</strong> <em>"to bestillinger pr år"</em> → <em>"to bestillinger per år"</em>. Forkortelsen "pr" er hverdagslig; "per" er det som hører hjemme i en akademisk tekst.</li>
-<li><strong>Kjønnskonsistens på substantiv:</strong> <em>"den mest brukte kriteriet"</em> → <em>"det mest brukte kriteriet"</em>. På norsk er <em>kriterium</em> intetkjønn, så det skal være "det", ikke "den".</li>
-<li><strong>Kryssreferanser i samme rapport:</strong> Da vi byttet rundt på rekkefølgen i kapittel 2 (etter foreleserens råd), ble enkelte interne henvisninger pekende feil — for eksempel sto det "se kapittel 4.4.1" der det riktige var "se kapittel 4.4 (Tabell 4.5)". Slike pekere er nå ryddet opp.</li>
-<li><strong>Tilleggskilde:</strong> Vi har lagt til <strong>Chopra &amp; Meindl (2016)</strong> som støttekilde i innledningen, ved siden av Christopher (2016). Begge er klassiske lærebøker i logistikkfaget, og det styrker forankringen å nevne begge.</li>
+<li><strong>Muntlig samtykke</strong> fra daglig leder Marit Stoksflod til å bli navngitt og at salgsdataene benyttes</li>
+<li><strong>Ingen personopplysninger</strong> i datagrunnlaget — kassesystemets dagsrapporter inneholder kun varekoder, antall og beløp</li>
+<li><strong>Ingen konkurransesensitive priser</strong> i rapporten — $p, w, s$ er antatte estimat, ikke faktiske marginer fra regnskapet</li>
+<li><strong>Manuskript-gjennomgang</strong> med daglig leder før publisering</li>
+<li>En anbefaling om at fremtidige prosjekter bør formalisere samtykket skriftlig før datafangsten starter</li>
 </ul>
-<p><strong>Hvorfor dette gjøres:</strong> Når sensor leser oppgaven, er småfeil noe av det første øyet legger merke til. Selv om innholdet er bra, kan slurv i språket signalisere at man ikke har lest gjennom det man har skrevet. Vi vil at sensor skal kunne fokusere på <em>innholdet</em>, ikke bli distrahert av rare setninger.</p>
+<p>Vi ryddet også opp i formuleringen "Reliabilitet sikres gjennom Git" — selvevalueringen påpekte at Git sikrer at koden kan kjøres på nytt, ikke at målingen er pålitelig. Vi skiller nå klart mellom <em>reproduserbarhet</em> (samme kode + samme data → samme tall) og <em>reliabilitet</em> i streng forstand.</p>
+<h3>3. Figurene rendres faktisk korrekt</h3>
+<p>Selvevalueringen var bekymret for at de relative stiene (<code>../013_gjennomforing/visuals/...</code>) skulle gi tomme firkanter i PDF-eksport. Vi sjekket den eksisterende PDF-en ved å rendere noen av figur-sidene som bilder, og figurene er der — Chrome-print finner stiene relativt fra HTML-filen. Ingen handling kreves.</p>
 <hr />
-<h2>Steg 6 — Vi laget likevel en oppdatert peer-to-peer-leveranse</h2>
-<p>Tidligere i dag mente jeg vi skulle vente med en ny <code>peer_to_peer</code>-snapshot. Men siden vi har gjort både kildebytte (Steg 1–4) og en fullstendig korrekturrunde (Steg 5), er forskjellen mellom gårsdagens og dagens versjon nå stor nok til at det er verdt å fryse en ny.</p>
-<p>Den nye snapshotten ligger i:
-- <code>014_report/peer_to_peer_2026-04-30/Forskningsoppgave_Gruppe_4.5.pdf</code></p>
-<p>Det er denne PDF-en dere kan referere til hvis dere skal se "akkurat hvordan rapporten så ut den 30. april".</p>
+<h2>Del B — De fire ekstra punktene fra finpusslisten</h2>
+<h3>4. Diebold-Mariano-test lagt til</h3>
+<p>Selvevalueringen sa: <em>"Vi sier SARIMA er 15,8 % bedre enn naiv strategi, men vi har ikke gjort en statistisk test som beviser at forskjellen ikke er tilfeldig."</em> — Det er nå gjort.</p>
+<p>Forklart enkelt: Diebold-Mariano er en statistisk test som spør om to prognosemodeller har "samme forventede tap". Hvis svaret er ja, betyr det at forskjellen mellom dem kan skyldes flaks. Hvis svaret er nei, betyr det at den ene er pålitelig bedre.</p>
+<p>Resultater på vår SARIMA mot naiv strategi:</p>
+<table>
+<thead>
+<tr>
+<th>Tap-funksjon</th>
+<th style="text-align: right;">DM-statistikk</th>
+<th style="text-align: right;">p-verdi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kvadratisk tap (≈ RMSE)</td>
+<td style="text-align: right;">–1,10</td>
+<td style="text-align: right;">0,30</td>
+</tr>
+<tr>
+<td>Absolutt tap (≈ MAE)</td>
+<td style="text-align: right;">–1,85</td>
+<td style="text-align: right;"><strong>0,09</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Begge har <strong>negativ statistikk</strong> — det betyr at SARIMA peker i riktig retning (lavere tap enn naiv). Men begge p-verdier er over den klassiske 5 %-grensen, så vi kan ikke konkludere med statistisk signifikans. Absolutt tap er svakt signifikant (p ≈ 0,09).</p>
+<p><strong>Det er ærlig formidlet i rapporten:</strong> Med kun 12 testmåneder har testen lav statistisk styrke per design. En definitiv test krever lengre evalueringsvindu, og det er nå identifisert som videre arbeid. Dette er faktisk en <em>styrke</em> — det viser at vi har en moderne forståelse av statistisk testbarhet.</p>
+<h3>5. Forskningshull og litteratursøk-metode</h3>
+<p>Selvevalueringen påpekte to ting: vi sa ikke hvordan vi søkte etter litteratur, og forskningshullet var "underforstått, ikke tydelig sagt".</p>
+<p>Vi la til en ny <strong>§2.6 Litteratursøk og forskningshull</strong> som beskriver:
+- <strong>Hvor vi søkte</strong> (Oria, Scopus, Google Scholar, referanselistene i kompendiet og hovedlærebøkene)
+- <strong>Hvilke søkeord</strong> ("SARIMA", "seasonal ARIMA", "newsvendor", "bullwhip", "retail forecasting", "fashion retail", "shoe industry")
+- <strong>Inklusjonskriterier</strong> (klassiske primærkilder fra 1913–2024, sentrale lærebøker, nyere fagfellevurderte artikler)
+- <strong>Forskningshullet</strong> eksplisitt: "<em>Tidligere studier har dokumentert SARIMA og newsvendor hver for seg i store retail-kontekster. Det vi finner mindre dokumentert er den kombinerte anvendelsen i en liten norsk detaljhandelsbedrift med få beslutningsøyeblikk og data låst i PDF-format. Vår studie fyller dette hullet ved å demonstrere en ende-til-ende-pipeline tilpasset disse rammebetingelsene.</em>"</p>
+<p>Den gamle §2.6 (mappingtabellen) er flyttet til §2.7.</p>
+<h3>6. Mappingtabellen kondensert + Vedlegg D slanket</h3>
+<p>Selvevalueringen sa: "Skill tydelig mellom <em>brukt i analysen</em> og <em>referert som ramme for utvidelse</em>". Vi har nå:</p>
+<ul>
+<li><strong>Liten kjernet tabell</strong> i §2.7 med de 4 sentrale pensumseksjonene som inngår <em>direkte i analysen</em></li>
+<li><strong>Mer kompakt rammetabell</strong> med 10 seksjoner som brukes som <em>teoretisk basis for diskusjon og videre arbeid</em></li>
+<li><strong>Den fullstendige mappingen</strong> (18 seksjoner med detaljerte forklaringer) er flyttet ut av hovedrapporten og inn i <code>013_gjennomforing/kompendiumkobling.md</code></li>
+</ul>
+<p>Dette reduserer hovedrapportens lengde uten å miste innholdet. Den som vil grave dypere har det fortsatt tilgjengelig.</p>
+<h3>7. Hovedfunn avrundet og konsekvent presisjon</h3>
+<p>Tallet <strong>+713 621 NOK</strong> er erstattet med <strong>"≈ 570 000 NOK / +11–12 %"</strong> i sammendrag, §4.4, §6.1 og §6.2. Vi har lagt til en eksplisitt merknad om presisjon i sammendraget:</p>
+<blockquote>
+<p><em>Den årlige gevinsten på "om lag 570 000 NOK / +11–12 %" oppgis bevisst som størrelsesorden, ikke som eksakt prognose – usikkerheten i $p, w, s$ er ±10–15 prosent, og presisjon utover dette ville være misvisende.</em></p>
+</blockquote>
 <hr />
-<h2>Filer som er endret i dag</h2>
+<h2>Del C — Finpussforslagene</h2>
+<h3>Polish som er gjennomført</h3>
+<table>
+<thead>
+<tr>
+<th>Endring</th>
+<th>Hvor</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>FS1 omformulert</strong> fra metodebeskrivelse til reelt forskningsspørsmål</td>
+<td>§1.4</td>
+<td>OK</td>
+</tr>
+<tr>
+<td><strong>Forkortelser skrevet ut</strong> første gang (MAE, RMSE, MAPE, AIC)</td>
+<td>§2.3, §4.2</td>
+<td>OK</td>
+</tr>
+<tr>
+<td><strong>Lange setninger splittet</strong> med flere siteringer (VMI i §5.2; multi-produkt i §3.5)</td>
+<td>§3.5, §5.2</td>
+<td>OK</td>
+</tr>
+<tr>
+<td><strong>"Verdensklasse"-formuleringen</strong> tonet ned til "god treffsikkerhet"</td>
+<td>§4.2</td>
+<td>OK</td>
+</tr>
+<tr>
+<td><strong>Dobbelt "ti sekunder via mobilen"</strong> ryddet til kun én forekomst med variert formulering</td>
+<td>Sammendrag, §1.1</td>
+<td>OK</td>
+</tr>
+<tr>
+<td><strong>Kilde for "to bestillinger per år"</strong> lagt til (Stoksflod-intervju + Pinedo 2016)</td>
+<td>§0 sammendrag</td>
+<td>OK</td>
+</tr>
+<tr>
+<td><strong>Anbefaling 1 omformulert</strong> uten Python-kommando i hovedrapporten</td>
+<td>§6.3</td>
+<td>OK</td>
+</tr>
+<tr>
+<td><strong>Diskusjonens oppsummeringstabell</strong> (ny §5.6) som mapper FS1–FS4 til konkrete diskusjonspunkter</td>
+<td>§5.6</td>
+<td>OK</td>
+</tr>
+<tr>
+<td><strong>§6.4 kondensert</strong> fra 14 forslag til 7 prioriterte i tre trinn</td>
+<td>§6.4</td>
+<td>OK</td>
+</tr>
+<tr>
+<td><strong>§5.7 (tidligere §5.6) skarpere</strong> — pedagogisk bidrag omformulert til "integrerende bidrag"</td>
+<td>§5.7</td>
+<td>OK</td>
+</tr>
+<tr>
+<td><strong>Bærekraft (§5.4) styrket</strong> med konkret CO₂-anslag (~5 800 kg CO₂ for høst-overstock)</td>
+<td>§5.4</td>
+<td>OK</td>
+</tr>
+<tr>
+<td><strong>Lv et al. (2023)</strong> lagt til i litteraturgjennomgangen, ikke bare i diskusjon</td>
+<td>§2.5</td>
+<td>OK</td>
+</tr>
+<tr>
+<td><strong>Diebold &amp; Mariano (1995)</strong> og <strong>Harvey, Leybourne &amp; Newbold (1997)</strong> lagt til i referanselista</td>
+<td>§7</td>
+<td>OK</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Del D — De nye tallene som skal huskes</h2>
+<p>Hvis sensor stiller spørsmål eller dere skal forklare prosjektet for noen, er det de <strong>nye tallene</strong> som gjelder fra og med i dag:</p>
+<h3>Prognosepresisjon (testperioden 2025)</h3>
+<table>
+<thead>
+<tr>
+<th>Modell</th>
+<th style="text-align: right;">MAE</th>
+<th style="text-align: right;">RMSE</th>
+<th style="text-align: right;">MAPE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>SARIMA(1,1,1)(1,1,1)₁₂</strong></td>
+<td style="text-align: right;"><strong>140 par</strong></td>
+<td style="text-align: right;"><strong>182 par</strong></td>
+<td style="text-align: right;"><strong>16,9 %</strong></td>
+</tr>
+<tr>
+<td>Naiv baseline (samme måned i fjor)</td>
+<td style="text-align: right;">163 par</td>
+<td style="text-align: right;">197 par</td>
+<td style="text-align: right;">19,0 %</td>
+</tr>
+<tr>
+<td>ETS (Holt-Winters)</td>
+<td style="text-align: right;">177 par</td>
+<td style="text-align: right;">231 par</td>
+<td style="text-align: right;">20,3 %</td>
+</tr>
+<tr>
+<td>ARIMA(1,1,1) — uten sesong</td>
+<td style="text-align: right;">229 par</td>
+<td style="text-align: right;">278 par</td>
+<td style="text-align: right;">24,5 %</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Forbedring SARIMA vs Naiv:</strong> +14,0 % på MAE
+<strong>Årssum 2025:</strong> SARIMA traff med 4,3 % avvik mot faktisk (10 338 mot 10 800 par)</p>
+<h3>Newsvendor-bestilling (basisscenario)</h3>
+<ul>
+<li>$\sigma_\text{mnd}$ = 182,9 par (in-sample fra 2023–2024)</li>
+<li>$\sigma_\text{sesong}$ = 447,9 par</li>
+<li>$z_\alpha$ = 0,6745 (75 % servicenivå, kritisk forhold = 600/800)</li>
+<li><strong>Sikkerhetslager:</strong> 302 par per sesong</li>
+<li><strong>$Q^*_\text{vår}$ = 5 975 par</strong> (mot Q_naiv = 5 389 par; faktisk salg = 6 000 par)</li>
+<li><strong>$Q^*_\text{høst}$ = 3 468 par</strong> (mot Q_naiv = 4 120 par; faktisk salg = 3 657 par)</li>
+</ul>
+<h3>Økonomisk effekt</h3>
+<ul>
+<li><strong>Brutto-resultat:</strong> Naiv 5 335 000 NOK → Newsvendor 5 665 959 NOK (+330 959 NOK)</li>
+<li><strong>Alternativkostnad tapt salg:</strong> Naiv 366 600 NOK → Newsvendor 128 241 NOK (–238 359 NOK)</li>
+<li><strong>Netto årseffekt:</strong> ≈ +570 000 NOK (+11,5 %)</li>
+</ul>
+<hr />
+<h2>Del E — Filer som er endret i dag</h2>
 <table>
 <thead>
 <tr>
@@ -383,37 +557,74 @@ pre code {
 <tbody>
 <tr>
 <td><code>014_report/Forskningsoppgave_Gruppe_4.5.md</code></td>
-<td>Kildebytte + korrekturlesing (≈40 steder totalt)</td>
+<td><strong>Hovedendringene:</strong> sigma, tall, etikk, DM-test, FS1, forskningshull, oppsummeringstabell, §6.4 kondensert</td>
 </tr>
 <tr>
 <td><code>014_report/Forskningsoppgave_Gruppe_4.5.html</code></td>
-<td>Speiler markdown-endringene</td>
+<td>Regenerert via <code>build_html.py</code></td>
 </tr>
 <tr>
-<td><code>014_report/peer_to_peer_2026-04-30/Forskningsoppgave_Gruppe_4.5.pdf</code></td>
-<td>Ny frosset leveranse for 30. april</td>
+<td><code>006_analysis/demand_forecasting.py</code></td>
+<td>Diebold-Mariano-funksjon, in-sample-RMSE, naiv baseline, JSON-output</td>
 </tr>
 <tr>
-<td><code>003_referanser/AKADEMISK_LITTERATUR.md</code></td>
-<td>Ny seksjon med 5 primærkilder, omdøpt seksjonsnummer</td>
+<td><code>006_analysis/sesongnewsvendor.py</code></td>
+<td>Leser sigma fra <code>forecast_metrics.json</code> (in-sample) i stedet for å regne på test-residualer</td>
 </tr>
 <tr>
-<td><code>011_proposal/proposal.md</code></td>
-<td>Ett avsnitt oppdatert</td>
+<td><code>013_gjennomforing/forecast_metrics.json</code></td>
+<td><strong>Ny</strong> — modellmetrikker og DM-test-resultater</td>
+</tr>
+<tr>
+<td><code>013_gjennomforing/newsvendor_resultater.json</code></td>
+<td>Oppdatert med nye tall</td>
+</tr>
+<tr>
+<td><code>013_gjennomforing/kompendiumkobling.md</code></td>
+<td><strong>Ny</strong> — full mapping mellom pensum og oppgaven (flyttet ut av hovedrapporten)</td>
+</tr>
+<tr>
+<td><code>013_gjennomforing/visuals/newsvendor_profit_curve.png</code></td>
+<td>Regenerert med $Q^* = 5\,975$</td>
+</tr>
+<tr>
+<td><code>013_gjennomforing/visuals/inventory_newsvendor_2025.png</code></td>
+<td>Regenerert med nye Q-verdier</td>
+</tr>
+<tr>
+<td><code>002_meetings/2026-05-15_oppsummering_til_gruppa.md</code></td>
+<td>Denne oppsummeringen</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2>Hvordan åpne dagens leveranse</h2>
-<p>For dere som vil se det nyeste:</p>
+<h2>Hva betyr dette for sluttresultatet?</h2>
+<p>Forskningsoppgaven er nå <strong>metodisk solid</strong> der den før hadde noen reelle svakheter. Det viktigste er at vi har gått fra:</p>
+<ul>
+<li>En oppgave som kunne kritiseres for <strong>sirkulær resonnement</strong> (sigma fra fasiten)</li>
+<li>En oppgave som <strong>ikke nevner etikk</strong> med navngitt bedrift og daglig leder</li>
+<li>En oppgave som <strong>påstår statistisk forbedring</strong> uten å teste den</li>
+</ul>
+<p>— til en oppgave som <strong>eksplisitt adresserer alle disse punktene</strong>. Tallene er nå mer ærlige (570k istedenfor 714k), og den statistiske analysen er mer transparent (DM-test viser at p ≈ 0,09 ikke er signifikant, men retningen er konsistent).</p>
+<p>Det er fortsatt finpuss som kan gjøres før innlevering, men de <strong>strukturelle svakhetene</strong> selvevalueringen identifiserte er nå håndtert. Selvevalueringens samlede konklusjon var: <em>"Med tre dagers målrettet arbeid på de syv prioriterte punktene kan dette løftes fra en solid bacheloroppgave til en eksepsjonell."</em></p>
+<p>I dag har vi gjort en stor del av disse tre dagers arbeid på én dag.</p>
+<hr />
+<h2>Hva som gjenstår</h2>
+<p>For å være ærlig, her er det som <strong>fortsatt</strong> kan/bør gjøres før innlevering:</p>
 <ol>
-<li><strong>Den fulle rapporten:</strong> <code>014_report/peer_to_peer_2026-04-30/Forskningsoppgave_Gruppe_4.5.pdf</code></li>
-<li><strong>Denne oppsummeringen som PDF:</strong> <code>002_meetings/2026-04-30_oppsummering_til_gruppa.pdf</code></li>
+<li><strong>Hent faktiske enhetspriser</strong> ($p, w, s$) fra Skoringens regnskap — dette ville stabilisert kronetallene</li>
+<li><strong>Sjekk eksplisitt mot kursets formelle krav</strong> — vi er fortsatt i øvre sjikt lengdemessig (selv om vi har kondensert)</li>
+<li><strong>Korrekturlesing</strong> — endringene i dag er substansielle, og en gjennomlesning av hele rapporten i sammenheng kan avdekke små inkonsekvenser</li>
 </ol>
+<p>Disse er ikke kritiske, men ville løftet oppgaven videre.</p>
 <hr />
 <h2>Trenger dere noe?</h2>
-<p>Hvis dere vil se selve referanselisten, åpne PDF-en og bla til siste kapittel ("Referanser"). Der ser dere alle bøkene og artiklene oppgaven viser til — nå med de fem nye standardverkene og Chopra &amp; Meindl (2016) lagt til.</p>
-<p>Spør gjerne hvis noe er uklart.</p>
+<p>Hvis dere vil se rapporten med alle endringene, bygg PDF-en på nytt med:</p>
+<pre><code>cd 014_report/_preview
+python full_rebuild.py
+</code></pre>
+<p>Det tar et minutt eller to (Chrome itererer to-tre ganger for å konvergere innholdsfortegnelsen).</p>
+<p>Spør gjerne hvis noe er uklart om hva som er endret. God helg — det er en god slutt på uken.</p>
 <p>— Gustavo</p>
 </div>
 </body>

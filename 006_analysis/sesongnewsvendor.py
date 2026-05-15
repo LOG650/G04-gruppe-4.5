@@ -50,9 +50,28 @@ monthly = monthly.set_index("Dato").sort_index()
 forecast = pd.read_csv(DATA_DIR / "forecast_results.csv", index_col=0)
 forecast.index = pd.to_datetime(forecast.index)
 
-# Prognoseusikkerhet (RMSE pr måned, estimert fra SARIMA-feilen i 2025)
-residualer = forecast["Faktisk"] - forecast["SARIMA"]
-sigma_pr_mnd = float(np.sqrt(np.mean(residualer ** 2)))
+# Prognoseusikkerhet (RMSE pr måned).
+#
+# VIKTIG: sigma estimeres fra SARIMA-modellens in-sample-residualer på
+# treningsperioden 2023-2024, IKKE fra test-residualene 2025. Hvis vi brukte
+# 2025-residualer, ville vi tatt usikkerheten fra fasiten for samme periode
+# som vi senere bruker for å evaluere økonomien (sirkulær resonnement, slik
+# selvevalueringen 14. mai 2026 påpekte).
+metrics_path = Path("013_gjennomforing/forecast_metrics.json")
+if metrics_path.exists():
+    with open(metrics_path, encoding="utf-8") as f:
+        _metrics = json.load(f)
+    sigma_pr_mnd = float(_metrics["modeller"].get("SARIMA_INSAMPLE_RMSE", 0))
+    if sigma_pr_mnd <= 0:
+        raise RuntimeError(
+            "SARIMA_INSAMPLE_RMSE mangler i forecast_metrics.json. "
+            "Kjør demand_forecasting.py først."
+        )
+else:
+    raise RuntimeError(
+        "013_gjennomforing/forecast_metrics.json finnes ikke. "
+        "Kjør demand_forecasting.py før sesongnewsvendor.py."
+    )
 
 
 def sesong_prognose(year: int, season: str, source: str = "SARIMA") -> float:
@@ -133,7 +152,7 @@ print(f"  w (innkjøp leverandør) = {W_WHOLESALE} NOK/par")
 print(f"  s (restverdi)          = {S_SALVAGE} NOK/par")
 print(f"  Kritisk forhold        = (p-w)/(p-s) = {CR:.4f}")
 print(f"  z_alpha                = {Z_ALPHA:.4f}  (servicenivå {CR*100:.1f} %)")
-print(f"\nPrognoseusikkerhet (SARIMA på 2025):")
+print(f"\nPrognoseusikkerhet (SARIMA in-sample 2023-2024):")
 print(f"  RMSE pr måned          = {sigma_pr_mnd:.1f} par")
 
 resultater = []
