@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<title>Peer_review_G03_av_Gruppe45_v3</title>
+<style>
+@page {
+  size: A4;
+  margin: 18mm 18mm 18mm 18mm;
+}
+* { box-sizing: border-box; }
+html, body {
+  font-family: 'Calibri', 'Segoe UI', Arial, sans-serif;
+  font-size: 11pt;
+  line-height: 1.5;
+  color: #1f2933;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===== COVER PAGE ===== */
+.cover {
+  position: relative;
+  height: 257mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 0;
+  margin: -2mm 0 0 0;
+}
+.cover-band {
+  background: linear-gradient(135deg, #0b3a66 0%, #1d6fb8 100%);
+  color: #ffffff;
+  padding: 38mm 14mm 28mm 14mm;
+  border-radius: 0 0 4mm 4mm;
+  box-shadow: 0 4px 12px rgba(11, 58, 102, 0.18);
+  position: relative;
+  overflow: hidden;
+}
+.cover-band::before {
+  content: "";
+  position: absolute;
+  top: -40mm;
+  right: -30mm;
+  width: 120mm;
+  height: 120mm;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 50%;
+}
+.cover-band::after {
+  content: "";
+  position: absolute;
+  bottom: -50mm;
+  left: -20mm;
+  width: 90mm;
+  height: 90mm;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+}
+.cover-eyebrow {
+  font-size: 10pt;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 10mm;
+  font-weight: 600;
+  position: relative;
+}
+.cover-title {
+  font-size: 44pt;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 6mm;
+  position: relative;
+}
+.cover-subtitle {
+  font-size: 16pt;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.92);
+  position: relative;
+}
+.cover-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 4mm;
+  margin: 14mm 14mm 0 14mm;
+  padding: 12mm 12mm 10mm 12mm;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+.cover-row {
+  margin-bottom: 8mm;
+}
+.cover-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 0 0 8mm 0;
+}
+.cover-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7mm 14mm;
+}
+.cover-label {
+  font-size: 8.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #6b7a8f;
+  font-weight: 600;
+  margin-bottom: 2mm;
+}
+.cover-value {
+  font-size: 13pt;
+  color: #0b3a66;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.cover-value-big {
+  font-size: 14pt;
+  color: #0b3a66;
+  font-weight: 600;
+}
+.cover-sub {
+  font-size: 10pt;
+  color: #6b7a8f;
+  font-weight: 400;
+  font-style: normal;
+}
+.cover-footer {
+  margin: auto 14mm 0 14mm;
+  padding-top: 10mm;
+  font-size: 9.5pt;
+  color: #6b7a8f;
+  text-align: center;
+  font-style: italic;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 6mm;
+  margin-top: 14mm;
+}
+.page-break { page-break-after: always; }
+
+/* ===== CONTENT PAGES ===== */
+h1 {
+  font-size: 20pt;
+  color: #0b3a66;
+  margin-top: 0;
+  margin-bottom: 6mm;
+  padding-bottom: 3mm;
+  border-bottom: 2.5px solid #1d6fb8;
+  font-weight: 700;
+}
+h2 {
+  font-size: 14pt;
+  color: #0b3a66;
+  margin-top: 8mm;
+  margin-bottom: 3mm;
+  padding-left: 3mm;
+  border-left: 4px solid #1d6fb8;
+  font-weight: 600;
+}
+h3 {
+  font-size: 12pt;
+  color: #0b3a66;
+  margin-top: 5mm;
+  margin-bottom: 2mm;
+  font-weight: 600;
+}
+h4 {
+  font-size: 11pt;
+  color: #324a63;
+  margin-top: 4mm;
+  margin-bottom: 1mm;
+  font-weight: 600;
+}
+p {
+  margin: 2mm 0;
+  text-align: left;
+}
+ul, ol {
+  margin: 2mm 0 3mm 0;
+  padding-left: 7mm;
+}
+li {
+  margin: 1.2mm 0;
+}
+li > ul, li > ol {
+  margin: 1mm 0;
+}
+strong {
+  color: #0b3a66;
+  font-weight: 600;
+}
+em {
+  color: #2c3e50;
+}
+hr {
+  border: none;
+  border-top: 1px dashed #cbd5e0;
+  margin: 6mm 0;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 4mm 0;
+  font-size: 10pt;
+}
+th, td {
+  border: 1px solid #cbd5e0;
+  padding: 2mm 3mm;
+  text-align: left;
+  vertical-align: top;
+}
+th {
+  background: #eef3f8;
+  color: #0b3a66;
+  font-weight: 600;
+}
+code {
+  background: #f4f6f8;
+  padding: 0.5mm 1.5mm;
+  border-radius: 1mm;
+  font-family: Consolas, monospace;
+  font-size: 9.5pt;
+  color: #0b3a66;
+}
+.closing {
+  margin-top: 8mm;
+  padding: 5mm 6mm;
+  background: #eef3f8;
+  border-left: 4px solid #1d6fb8;
+  border-radius: 0 2mm 2mm 0;
+  font-size: 10.5pt;
+  color: #324a63;
+  font-style: italic;
+}
+</style>
+</head>
+<body>
+<div class="cover">
+  <div class="cover-band">
+    <div class="cover-eyebrow">LOG650 &middot; Bacheloroppgave i Logistikk &middot; Våren 2026</div>
+    <div class="cover-title">Peer-review</div>
+    <div class="cover-subtitle">Tilbakemelding på prosjektrapport</div>
+  </div>
+
+  <div class="cover-card">
+    <div class="cover-row">
+      <div class="cover-label">Rapport som vurderes</div>
+      <div class="cover-value"><em>Optimalisering av bakkestøtte-ressurser ved Bergen Lufthavn Flesland</em><br><span class="cover-sub">En kvantitativ simuleringsstudie av gate-utnyttelse og busstransport</span></div>
+    </div>
+    <div class="cover-divider"></div>
+    <div class="cover-grid">
+      <div>
+        <div class="cover-label">Vurdert gruppe</div>
+        <div class="cover-value-big">G03 &middot; Bergens Beste</div>
+      </div>
+      <div>
+        <div class="cover-label">Vurderende gruppe</div>
+        <div class="cover-value-big">Gruppe 4.5</div>
+      </div>
+      <div>
+        <div class="cover-label">Dato</div>
+        <div class="cover-value-big">14. mai 2026</div>
+      </div>
+      <div>
+        <div class="cover-label">Sider</div>
+        <div class="cover-value-big">4</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cover-footer">Tilbakemeldingen er ment som konstruktiv støtte og bygger på vurderingskriteriene i veiledningen for peer-review i LOG650.</div>
+</div>
+
+<div class="page-break"></div>
+
+<h1>1. Helhetsinntrykk</h1>
+<p>Rapporten er godt strukturert, har klare forskningsspørsmål og en simulering som faktisk fungerer og gir resultater. Den matematiske beskrivelsen i kapittel 3.4 er en sterk del. Dere viser også at dere er ærlige om svakheter ved en deterministisk modell — det er en moden måte å skrive på.</p>
+<p>Hovedinntrykket er likevel at det <strong>akademiske rammeverket</strong> rundt det tekniske arbeidet ikke er like sterkt som selve simuleringen. De viktigste tingene som trekker rapporten ned:</p>
+<ul>
+<li><strong>Kapittel 2 er ikke en litteraturgjennomgang</strong> — det er bare et kort teoretisk rammeverk uten tidligere forskning og uten henvisninger til andre studier.</li>
+<li><strong>Valideringstabellen er nesten tom</strong> — det står "Ikke beregnet" i de fleste feltene.</li>
+<li><strong>Ingen kildehenvisninger i selve teksten</strong> — bare en kort referanseliste på fem kilder helt til slutt.</li>
+<li><strong>Ingen figurer i hele rapporten</strong> — selv om dere har mye tallmateriale som kunne vært visualisert.</li>
+<li><strong>Konklusjonen svarer ikke direkte på de fire forskningsspørsmålene</strong> dere stiller i innledningen.</li>
+</ul>
+<h2>Kjapp oversikt per område</h2>
+<table>
+<thead>
+<tr>
+<th>Område</th>
+<th>Vår vurdering</th>
+<th>Hovedutfordring</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Innledning</td>
+<td>Sterk</td>
+<td>Mangler kilder og tydelig forklaring av betydning</td>
+</tr>
+<tr>
+<td>Litteraturgjennomgang</td>
+<td><strong>Svak</strong></td>
+<td>Mangler reell gjennomgang og forskningshull</td>
+</tr>
+<tr>
+<td>Metode</td>
+<td>Sterk</td>
+<td>Validering er erklært, men ikke gjennomført</td>
+</tr>
+<tr>
+<td>Analyse og resultater</td>
+<td>God</td>
+<td>Ingen figurer, mistenkelig 15 min-grense</td>
+</tr>
+<tr>
+<td>Diskusjon</td>
+<td>God</td>
+<td>Forskningsspørsmål kobles ikke eksplisitt</td>
+</tr>
+<tr>
+<td>Konklusjon</td>
+<td>God</td>
+<td>Svarer ikke punkt for punkt på FS1–FS4</td>
+</tr>
+<tr>
+<td>Skriveflyt og formelt</td>
+<td>God</td>
+<td>Manglende APA 7-siteringer og figurer</td>
+</tr>
+</tbody>
+</table>
+<p>Under går vi gjennom hvert område med konkrete forbedringsforslag.</p>
+<hr />
+<h1>2. Områdevis vurdering</h1>
+<h2>2.1 Innledning</h2>
+<p><strong>Det som fungerer bra:</strong></p>
+<ul>
+<li>Bakgrunnen forklarer raskt hvorfor gate-kapasitet og busstransport henger sammen.</li>
+<li>De fire forskningsspørsmålene i 1.3 er konkrete og lar seg faktisk svare på med simulering.</li>
+<li>Avgrensningen i 1.4 er ryddig og forklarer godt hva dere har valgt å holde utenfor.</li>
+</ul>
+<p><strong>Det dere bør forbedre:</strong></p>
+<ul>
+<li>Dere skriver at Flesland er "Norges nest største flyplass" og at trafikken har økt — men uten kilde eller tall. Legg inn passasjertall fra Avinor.</li>
+<li>Det står ikke tydelig nok hvorfor studien er viktig. Hvem har nytte av svarene? Avinor? Flyselskapene? Skriv det rett ut.</li>
+<li>Avslutt innledningen med en kort setning om hvordan resten av rapporten er bygget opp.</li>
+</ul>
+<h2>2.2 Litteraturgjennomgang og teoretisk forankring</h2>
+<p><strong>Dette er rapportens svakeste område.</strong> Kapittel 2 heter "Teoretisk Rammeverk", men det er ikke det samme som en litteraturgjennomgang. Veiledningen ber om tre ting som mangler:</p>
+<ul>
+<li><strong>Tidligere forskning på området.</strong> Det finnes mange studier på lufthavn­simulering og gate-allokering, men ingen av dem er nevnt.</li>
+<li><strong>Forskningshullet.</strong> Hvorfor er akkurat <em>deres</em> studie nødvendig? Hva har ikke andre allerede gjort?</li>
+<li><strong>Sammenligning av metoder.</strong> Hvorfor DES og ikke optimering eller agentbasert simulering?</li>
+</ul>
+<p><strong>Andre konkrete problemer:</strong></p>
+<ul>
+<li>Referanselisten har bare fem kilder. Fire av dem er lærebøker, ingen er fagartikler.</li>
+<li>Det finnes <strong>ingen kildehenvisninger inne i selve teksten</strong>. Påstander som "DES er spesielt sterkt på å modellere kø-situasjoner" må ha en kilde.</li>
+</ul>
+<p><strong>Tema dere kan søke på for å bygge ut kapittelet:</strong></p>
+<ul>
+<li><em>Airport gate assignment problem</em> (AGAP)</li>
+<li><em>Discrete event simulation airport operations</em></li>
+<li><em>Apron bus operations / remote stand allocation</em></li>
+<li><em>Airport capacity planning under uncertainty</em></li>
+<li><em>SimPy aviation case study</em></li>
+</ul>
+<p>Søk gjerne i Oria, Google Scholar og Scopus. 5–8 fagfellevurderte artikler er et fornuftig minimum.</p>
+<p><strong>Vårt forslag:</strong> Bygg ut kapittel 2 med en reell gjennomgang, og skriv eksplisitt: <em>"Vår studie skiller seg fra tidligere arbeid ved at..."</em>. Ta i bruk APA 7 i hele teksten, ikke bare i referanselisten.</p>
+<h2>2.3 Metode</h2>
+<p><strong>Det som fungerer bra:</strong></p>
+<ul>
+<li>Beskrivelsen av forskningsdesign og bruk av simulering som "digitalt laboratorium" er ryddig forklart.</li>
+<li>Datavasken (3.2) er detaljert og gir leseren tillit til at data­grunnlaget er solid.</li>
+<li><strong>Den matematiske formuleringen i 3.4 er en stor styrke</strong> — mange bachelor­oppgaver hopper over dette.</li>
+<li>Dere skiller riktig mellom verifisering og validering i 3.5.</li>
+</ul>
+<p><strong>Det dere bør forbedre:</strong></p>
+<ul>
+<li><strong>Valideringen er bare delvis gjennomført.</strong> Tabellen i 3.5 har "Ikke beregnet" i nesten alle felt. Enten må dere fylle inn faktiske tall fra Avinor-loggene, eller forklare ærlig hvorfor det ikke lot seg gjøre.</li>
+<li><strong>Reliabilitet er ikke nevnt.</strong> Skriv en setning eller to om at deterministisk simulering gir samme svar ved samme input, og hva som endrer seg når dere senere tar inn tilfeldighet.</li>
+<li><strong>Etiske hensyn er ikke nevnt.</strong> Selv om det er enkelt (ingen personidentifiserende data), bør dere si det.</li>
+<li><strong>Kapittel 3.6 er forvirrende.</strong> Dere kaller scenarioene "planlagte" — men flere av dem er allerede gjennomført og ligger i resultattabellen i 4.2. Slå dem sammen, eller flytt 3.6 til kapittel 6 om videre forskning.</li>
+</ul>
+<h2>2.4 Analyse og resultater</h2>
+<p><strong>Det som fungerer bra:</strong></p>
+<ul>
+<li>Den deskriptive statistikken i 4.1 (141 fly, fordeling D/I/S, fly­størrelse) gir leseren et godt bilde før selve simuleringen.</li>
+<li>Tabell 1 oppsummerer ti scenarioer på en oversiktlig måte.</li>
+<li>Refleksjonen i 4.4 om at "lav gjennomsnittlig ventetid kan skjule sårbarhet" er innsiktsfull.</li>
+</ul>
+<p><strong>Det dere bør forbedre:</strong></p>
+<ul>
+<li><strong>Ingen figurer.</strong> Dere har mye fint tallmateriale som ville fungert som diagrammer.</li>
+<li><strong>Maks ventetid er 15,0 minutter i åtte av ti scenarioer.</strong> Dette ser ut som en innebygd grense i koden, ikke et naturlig resultat. Sjekk om det er en timeout eller en busstur-runde, og forklar det.</li>
+<li><strong>Trafikkvekst-scenarioene gir lite mening uten kontekst.</strong> "+30 % vekst" gir bare 8 ekstra fly totalt. Forklar hvor mange fly som faktisk er i peak (kl. 15:00–17:30) før og etter veksten.</li>
+<li><strong>Det stokastiske scenariet</strong> står som "snitt" uten antall replikasjoner eller konfidensintervall — selv om dere har formelen for 95 % KI på linje 228. Vis n, standardavvik og KI.</li>
+<li><strong>Kun én testdag (17. juni 2026).</strong> Forklar hvorfor akkurat denne dagen er valgt — er det den travleste i året? Et gjennomsnitt av topp-10 dager?</li>
+<li><strong>Et viktig funn er ikke kommentert:</strong> Ventetiden er identisk (0,71 min) ved 2 og 3 sjåfører. Det betyr at to sjåfører trolig er nok — si det rett ut.</li>
+<li>Det er noen rare linjebrudd og halve avsnitt rundt linje 296–299. Rydd opp.</li>
+</ul>
+<p><strong>Konkrete figurforslag dere kan lage rett fra simuleringen:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Figur</th>
+<th>Hva den viser</th>
+<th>Hvorfor den hjelper</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Linjediagram</td>
+<td>Antall opptatte gates time-for-time gjennom døgnet</td>
+<td>Gjør peak-perioden synlig for leseren</td>
+</tr>
+<tr>
+<td>Histogram</td>
+<td>Fordeling av ventetider over alle 141 fly</td>
+<td>Viser at få fly venter, men hvor lenge</td>
+</tr>
+<tr>
+<td>Stolpediagram</td>
+<td>Sammenligning av de 10 scenarioene</td>
+<td>Erstatter behovet for å lese tabellen rad for rad</td>
+</tr>
+<tr>
+<td>Gantt-diagram</td>
+<td>Gateutnyttelse i rushtimen 15:00–17:30</td>
+<td>Viser hvordan flex-gater og remote brukes</td>
+</tr>
+</tbody>
+</table>
+<h2>2.5 Diskusjon</h2>
+<p><strong>Det som fungerer bra:</strong></p>
+<ul>
+<li>Diskusjonen i 5.1 trekker frem at "lave gjennomsnittsverdier kan skjule sårbarhet" — et godt poeng.</li>
+<li>Koblingen til Littles Lov i 5.2 er et naturlig faglig anker.</li>
+<li>De praktiske anbefalingene i 5.3 er konkrete.</li>
+</ul>
+<p><strong>Det dere bør forbedre:</strong></p>
+<ul>
+<li><strong>Funnene knyttes ikke tydelig til de fire forskningsspørsmålene.</strong> Veiledningen krever dette. Lag gjerne fire underseksjoner eller fire bullet-punkter som svarer ett-til-ett på FS1, FS2, FS3 og FS4.</li>
+<li><strong>Ingen sammenligning med andre studier.</strong> Hvordan står Flesland-tallene seg mot tilsvarende studier av andre lufthavner? (Dette krever at litteraturgjennomgangen i 2.2 først bygges ut.)</li>
+<li><strong>APOC</strong> dukker opp i 5.3 uten å være forklart tidligere. Skriv ut hva forkortelsen betyr.</li>
+<li>Implikasjoner for <strong>teori og policy</strong> mangler — alt er rettet mot drift hos Avinor. Skriv et avsnitt om hva studien bidrar med metodisk.</li>
+</ul>
+<h2>2.6 Konklusjon</h2>
+<p><strong>Det som fungerer bra:</strong></p>
+<ul>
+<li>Begrensningene i 6.2 er ærlig formulert.</li>
+<li>Forslagene til videre forskning i 6.3 er relevante.</li>
+</ul>
+<p><strong>Det dere bør forbedre:</strong></p>
+<ul>
+<li><strong>Konklusjonen svarer ikke på forskningsspørsmålene.</strong> Dere nevner at "to sjåfører er kritisk" og at "20 % vekst kan håndteres" — men FS3 og FS4 dukker aldri opp eksplisitt. Bruk fire bullet-punkter, ett per FS.</li>
+<li><strong>Studiens bidrag til teori er ikke nevnt.</strong> Selv om bidraget er praktisk, kan dere si: <em>"Modellen viser hvordan koblede ressurser (gate × buss × sjåfør) kan modelleres i ett enhetlig DES-rammeverk."</em></li>
+<li><strong>Punkt 3 i 6.3</strong> snakker om "tomgangskjøring ved gate-konflikter". Mener dere fly i hold-mønster, eller fly på bakken som venter? Vær mer presis.</li>
+</ul>
+<h2>2.7 Skriveflyt og formelle aspekter</h2>
+<p><strong>Det som fungerer bra:</strong></p>
+<ul>
+<li>Språket er stort sett klart og fagrettet.</li>
+<li>Tabellene er ryddige og leservennlige.</li>
+<li>Bruken av kursiv for engelske fagord (turnaround, flex-gates) er konsekvent.</li>
+</ul>
+<p><strong>Det dere bør forbedre:</strong></p>
+<ul>
+<li><strong>APA 7 er ikke fulgt.</strong> Ingen kildehenvisninger i løpende tekst, og bare 5 referanser totalt. Dette er en av rapportens største svakheter formelt sett.</li>
+<li><strong>Ingen figurer i hele rapporten.</strong> Veiledningen vurderer eksplisitt figurer og visuelt støtte­materiale.</li>
+<li><strong>Forkortelser:</strong> DES og FCFS er forklart, men APOC er ikke. D/I/S kunne vært definert tydeligere første gang.</li>
+<li><strong>Vedleggsreferansene</strong> (linje 407–408) peker til Python-filer i et <code>04_src</code>-katalog. Avklar om disse faktisk leveres med rapporten.</li>
+<li><strong>Originalitet:</strong> Bruken av faktisk Avinor-data og koblingen mellom gate, buss og sjåfør er praksisnær og relevant. Dette kan løftes tydeligere frem hvis litteraturgjennomgangen bygges ut.</li>
+</ul>
+<hr />
+<h1>3. Spørsmål dere kan tenke over</h1>
+<p>Disse er ikke krav, bare spørsmål vi tror kan hjelpe dere å løfte rapporten et hakk:</p>
+<ul>
+<li><strong>Hvorfor 15 minutter?</strong> Kan dere kjøre simuleringen én gang med trace-logg og se hvor det tallet kommer fra?</li>
+<li><strong>Er 17. juni virkelig den travleste dagen?</strong> Og hva ville skjedd hvis dere kjørte simuleringen for <em>alle</em> dager i juni og presenterte fordelingen?</li>
+<li><strong>Hva er den minste endringen i bemanning som gir merkbar effekt?</strong> Resultatene tyder på at 2 sjåfører er "nok" — men hva med 1,5 (én sjåfør hele dagen pluss en ekstra i peak)?</li>
+<li><strong>Hvor robust er konklusjonen om +20 % vekst</strong> hvis dere også legger inn realistiske ankomstforsinkelser samtidig?</li>
+</ul>
+<p>Dette er typen spørsmål en sensor vil stille. Hvis dere har svar (eller en plan for å finne svar), står dere mye sterkere på muntlig.</p>
+<hr />
+<h1>4. Hvis dere har lite tid — gjør dette først</h1>
+<p>Vi anbefaler å prioritere i denne rekkefølgen:</p>
+<ol>
+<li><strong>Bygg ut kapittel 2</strong> til en ekte litteraturgjennomgang med fagartikler og et tydelig forskningshull. Innfør APA 7-siteringer i hele teksten.</li>
+<li><strong>Fyll inn valideringstabellen</strong> med faktiske tall — eller forklar ærlig hvorfor de ikke kunne beregnes.</li>
+<li><strong>Legg til 3–5 figurer</strong> (gateutnyttelse over tid, ventetidsfordeling, scenariosammenligning).</li>
+<li><strong>Strukturer diskusjon og konklusjon</strong> rundt de fire forskningsspørsmålene.</li>
+<li><strong>Forklar/sjekk</strong> at maks ventetid på 15 minutter ikke er en innebygd grense, og tallfest hva "+20 %/+30 % vekst i peak" faktisk betyr i antall fly.</li>
+</ol>
+<p>Punkt 1 og 3 vil gi størst løft for innsatsen. Punkt 2 og 5 er viktige fordi de fjerner tvil rundt resultatene. Punkt 4 er en relativt liten endring som gjør hele rapporten lettere å vurdere mot kriteriene.</p>
+<hr />
+<div class="closing">
+Reviewen er gjennomført ut fra kriteriene i Tabell 1 i veiledningen for peer-review i LOG650. Tilbakemeldingen er ment som konstruktiv hjelp til videre arbeid og reflekterer Gruppe 4.5 sin samlede vurdering. Dere har et godt teknisk fundament &mdash; med litt mer akademisk innramming kan dette bli en solid bacheloroppgave. Lykke til videre!
+</div>
+</body>
+</html>
