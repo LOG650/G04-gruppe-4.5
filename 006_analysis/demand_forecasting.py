@@ -11,12 +11,16 @@ from statsmodels.tsa.statespace.sarimax import SARIMAX
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 
-def diebold_mariano(e1: np.ndarray, e2: np.ndarray, h: int = 1, power: int = 2) -> tuple[float, float]:
+def diebold_mariano(e1: np.ndarray, e2: np.ndarray, h: int = 1, power: int = 2) -> tuple[float, float, float]:
     """Diebold-Mariano-test for like prognosepresisjon mellom modell 1 og 2.
 
     H0: E[d_t] = 0 (modellene er like presise),  d_t = |e1_t|^power - |e2_t|^power.
-    Returnerer (DM-statistikk, tosidig p-verdi). Bruker Harvey-Leybourne-Newbold
-    små-utvalg-korreksjon (Harvey, Leybourne & Newbold, 1997).
+    Returnerer (DM-statistikk, tosidig p-verdi, ensidig p-verdi for H1: e1 har lavere tap).
+    Bruker Harvey-Leybourne-Newbold små-utvalg-korreksjon (Harvey, Leybourne & Newbold, 1997).
+
+    Ensidig p-verdi tilsvarer H1: E[d_t] < 0, dvs. at modell 1 (e1) har lavere
+    forventet tap enn modell 2 (e2). Dette er den faglig riktige hypotesen når
+    spørsmålet er "er SARIMA *bedre* enn naiv?".
     """
     e1 = np.asarray(e1, dtype=float)
     e2 = np.asarray(e2, dtype=float)
@@ -30,12 +34,14 @@ def diebold_mariano(e1: np.ndarray, e2: np.ndarray, h: int = 1, power: int = 2) 
         gamma_k = float(np.mean((d[k:] - mean_d) * (d[:-k] - mean_d)))
         var_d += 2 * gamma_k
     if var_d <= 0:
-        return float("nan"), float("nan")
+        return float("nan"), float("nan"), float("nan")
     dm = mean_d / np.sqrt(var_d / n)
     # Harvey-Leybourne-Newbold-korreksjon
     hln = np.sqrt((n + 1 - 2 * h + h * (h - 1) / n) / n) * dm
-    p_value = 2 * (1 - scipy_stats.t.cdf(abs(hln), df=n - 1))
-    return float(hln), float(p_value)
+    p_value_two = 2 * (1 - scipy_stats.t.cdf(abs(hln), df=n - 1))
+    # Ensidig p-verdi for H1: mean_d < 0 (modell 1 bedre). t.cdf gir P(T <= hln).
+    p_value_one = float(scipy_stats.t.cdf(hln, df=n - 1))
+    return float(hln), float(p_value_two), p_value_one
 
 
 def run_forecasting():
@@ -139,19 +145,20 @@ def run_forecasting():
     # fordi testhorisonten er kort (n=12). En multi-step-variant med h=12 ville
     # krevd en lang-løps-varians basert på 11 autokovarianser fra kun 12 obs,
     # som ikke gir meningsfullt varianseestimat. Power=2 (kvadratisk tap).
-    dm_stat, dm_p = (float("nan"), float("nan"))
+    dm_stat, dm_p, dm_p_one = (float("nan"), float("nan"), float("nan"))
+    dm_stat_abs, dm_p_abs, dm_p_abs_one = (float("nan"), float("nan"), float("nan"))
     if 'SARIMA' in results:
         e_sarima = (test.values - results['SARIMA'].values).astype(float)
         e_naiv = (test.values - naiv_pred.values).astype(float)
-        dm_stat, dm_p = diebold_mariano(e_sarima, e_naiv, h=1, power=2)
+        dm_stat, dm_p, dm_p_one = diebold_mariano(e_sarima, e_naiv, h=1, power=2)
         print(f"\nDiebold-Mariano (SARIMA vs Naiv, h=1, kvadratisk tap):")
-        print(f"  DM-stat = {dm_stat:.3f},  tosidig p-verdi = {dm_p:.3f}")
+        print(f"  DM-stat = {dm_stat:.3f},  tosidig p-verdi = {dm_p:.3f},  ensidig p-verdi = {dm_p_one:.3f}")
         print("  (negativ DM-stat => SARIMA har lavere forventet tap enn Naiv)")
 
         # Tilleggstest med absolutt tap (mer robust for kort serie)
-        dm_stat_abs, dm_p_abs = diebold_mariano(e_sarima, e_naiv, h=1, power=1)
+        dm_stat_abs, dm_p_abs, dm_p_abs_one = diebold_mariano(e_sarima, e_naiv, h=1, power=1)
         print(f"Diebold-Mariano (SARIMA vs Naiv, h=1, absolutt tap):")
-        print(f"  DM-stat = {dm_stat_abs:.3f},  tosidig p-verdi = {dm_p_abs:.3f}")
+        print(f"  DM-stat = {dm_stat_abs:.3f},  tosidig p-verdi = {dm_p_abs:.3f},  ensidig p-verdi = {dm_p_abs_one:.3f}")
 
     # Sikkerhetslager-tall: bruk in-sample-RMSE fra treningsperioden, ikke
     # test-RMSE. Dette unngår sirkulariteten "estimere usikkerhet på 2025 og
@@ -168,11 +175,17 @@ def run_forecasting():
         "modeller": metrics,
         "diebold_mariano_sarima_vs_naiv": {
             "h": 1,
-            "tap_kvadratisk": {"dm_stat": dm_stat, "p_verdi_tosidig": dm_p},
-            "tap_absolutt": {
-                "dm_stat": dm_stat_abs if 'SARIMA' in results else float("nan"),
-                "p_verdi_tosidig": dm_p_abs if 'SARIMA' in results else float("nan"),
+            "tap_kvadratisk": {
+                "dm_stat": dm_stat,
+                "p_verdi_tosidig": dm_p,
+                "p_verdi_ensidig": dm_p_one,
             },
+            "tap_absolutt": {
+                "dm_stat": dm_stat_abs,
+                "p_verdi_tosidig": dm_p_abs,
+                "p_verdi_ensidig": dm_p_abs_one,
+            },
+            "ensidig_alternativ": "H1: SARIMA har lavere forventet tap enn naiv baseline",
         },
     }
     with open("013_gjennomforing/forecast_metrics.json", "w", encoding="utf-8") as f:

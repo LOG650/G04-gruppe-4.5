@@ -22,11 +22,14 @@
     "h": 1,
     "tap_kvadratisk": {
       "dm_stat": -1.1004369731186214,
-      "p_verdi_tosidig": 0.2946402542753941
+      "p_verdi_tosidig": 0.2946402542753941,
+      "p_verdi_ensidig": 0.14732012713769702
     },
     "tap_absolutt": {
       "dm_stat": -1.8533903859490428,
-      "p_verdi_tosidig": 0.09081853915626126
-    }
+      "p_verdi_tosidig": 0.09081853915626126,
+      "p_verdi_ensidig": 0.0454092695781306
+    },
+    "ensidig_alternativ": "H1: SARIMA har lavere forventet tap enn naiv baseline"
   }
 }
