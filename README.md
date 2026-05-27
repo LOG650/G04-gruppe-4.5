@@ -17,7 +17,9 @@ Dette depotet inneholder det komplette forskningsprosjektet utført av Gruppe 4.
 | `011_proposal/` | Prosjektforslaget |
 | `012_plan/` | Prosjektstyring, risikoanalyse og interessentkartlegging |
 | `013_gjennomforing/` | Teknisk dokumentasjon, valideringsrapport, visualiseringer og brukermanual |
-| `014_report/` | Bacheloroppgaven (`Bacheloroppgave_Skoringen_KOMPLETT.md`) |
+| `013_peer_review/` | Mottatt peer-review og tilbakemeldinger |
+| `014_report/` | Hovedrapporten (`Forskningsoppgave_Gruppe_4.5.md` / `.pdf`) |
+| `015_eksamensforberedelse/` | Forberedelse til muntlig eksamen (studieguide) |
 
 ## 🚀 Teknisk Løsning
 Systemet er en pipeline fra ustrukturerte salgsrapporter til kvantitative bestillingsanbefalinger:

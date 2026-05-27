@@ -253,6 +253,21 @@ Disse tre brukte vi for å sjekke at SARIMA-modellen vår er teknisk god:
 - **Ljung-Box**: "Er det noe gjenværende mønster i feilene?" – Hvis ja, har vi en dårlig modell. Hos oss p > 0,05 → modellen er ok.
 - **Shapiro-Wilk**: "Er feilene normalfordelt?" – Vi trenger det for å bruke newsvendor med normalfordeling-antakelse. Hos oss er det oppfylt.
 
+## Bærekraft og CO₂ — hvorfor er det relevant?
+
+Bedre prognoser har en direkte bærekraftseffekt: redusert overstock betyr færre sko som må selges som ukurans eller kastes.
+
+**Vårt grove anslag (§5.4):**
+- Newsvendor reduserer overlager med 463 par i høstsesongen 2025
+- Industristandard: ~12,5 kg CO₂-ekvivalenter per par sko (Quantis, 2018)
+- Spart fotavtrykk: ~5 800 kg CO₂ per år (omtrent som én flyreise Oslo–New York tur/retur)
+
+**Viktig forbehold:** Reell sparing forutsetter at leverandøren faktisk *produserer* mindre når Skoringen bestiller mindre. Hvis leverandøren bare selger overskuddet til en annen butikk, flyttes overlageret oppover i kjeden uten miljøgevinst.
+
+**Kobling til FNs bærekraftsmål 12 – Ansvarlig forbruk og produksjon.**
+
+**Hvis sensor spør "hva er bærekraftsbidraget?":** "Bedre prognose reduserer overstock, som betyr færre sko produsert uten å nå en kunde. Vårt anslag er 5 800 kg CO₂ spart per år fra denne ene butikken. Det er beskjedent i absolutt størrelse, men illustrerer prinsippet om at logistikkanalyse kan ha både økonomiske og miljømessige gevinster samtidig."
+
 ## Servicenivå — hvorfor 75 % og ikke 95 %?
 
 **75 %** er det matematisk optimale gitt våre priser (CR = 600/800). Det betyr: vi designer bestillingen slik at i 3 av 4 sesonger har vi nok lager. I 1 av 4 sesonger blir vi tomme.
@@ -561,6 +576,21 @@ Disse er konkrete spørsmål du sannsynligvis får. Forslag til svar er korte �
 ## Q: "Hvorfor antatte priser? Det undergraver hele analysen!"
 **A**: "Vi var åpne om det. To grunner: Skoringen kunne ikke gi sensitive marginstall, og pris-strukturen er konkurransesensitiv informasjon. Vi gjorde sensitivitetsanalyse for å vise at *rangeringen* mellom newsvendor og naiv er robust – konklusjonen kollapser ikke uansett hvilke rimelige verdier vi velger. Men ja, de absolutte kronetallene har ±10–15 prosent usikkerhet, og det er den første anbefalingen for videre arbeid."
 
+## Q: "Hva er studiens bidrag til faget?"
+**A**: "Tre ting. (1) Et *metodisk* bidrag: pipelinen som konverterer ustrukturerte PDF-rapporter til strukturert tidsserie er reproduserbar og kan brukes av andre butikker med samme problem. (2) Et *empirisk* bidrag: vi gir et konkret datapunkt for hva man kan forvente i prognoseforbedring og økonomisk effekt i en liten norsk skobutikk. (3) Et *integrerende* bidrag: vi viser hvordan SARIMA, newsvendor og bullwhip-teori kan kobles til én sammenhengende beslutningsstøttemodell – en hybrid løsningsstrategi i Puchinger og Raidls (2005) forstand."
+
+## Q: "Hva med etikk og personvern – hvordan håndterte dere det?"
+**A**: "Daglig leder Marit Stoksflod ga muntlig samtykke til at butikken, hennes navn og salgsdataene brukes. Dataene inneholder ingen personopplysninger – kassesystemets Z-rapporter har varekoder og beløp, ikke kundeidentifikatorer – så GDPR er ikke direkte berørt. Prisparameterne er antatte estimat, ikke faktiske tall fra regnskapet, nettopp for å unngå å avsløre konkurransesensitiv informasjon. Vi anerkjenner at samtykket ideelt sett burde vært skriftlig fra start."
+
+## Q: "Var det noe som overrasket dere i resultatene?"
+**A**: "Tre ting. (1) Den *flate profittkurven* nær Q* – newsvendor-løsningen er langt mer robust enn forventet for små feil i parameterne. Selv ±300 par avvik fra optimum har marginal effekt på profitt. (2) Høstsesongen ble *nedjustert*, ikke oppjustert – vi trodde modellen primært ville vise at butikken bestilte for lite, men den viste at naiv strategi *overestimerte* høsten pga. et engangshopp i september 2024. (3) ETS var *dårligere enn naiv* baseline – det var uventet fordi ETS normalt er konkurransedyktig med SARIMA."
+
+## Q: "Hva er bærekraftsbidraget?"
+**A**: "Redusert overstock betyr færre sko som produseres uten å nå en kunde. Newsvendor reduserer overlager med 463 par i høst 2025, tilsvarende ca. 5 800 kg CO₂ spart. Det er beskjedent i absolutt størrelse – omtrent som én flyreise Oslo–New York – men det illustrerer prinsippet om at logistikkanalyse kan gi både økonomiske og miljømessige gevinster. Kobling til FNs bærekraftsmål 12."
+
+## Q: "Hvordan anbefaler dere at butikken implementerer dette i praksis?"
+**A**: "Gradvis i tre faser. Fase 1 (høst 2026): parallellkjøring der modellen genererer en anbefaling, men daglig leder tar beslutningen. Avvik logges. Fase 2 (2027): hybridkjøring der modellen er primær input, men leder kan justere ±10 %. Fase 3 (fra 2028): full modellkjøring med menneskelig overstyring kun ved unike hendelser. Poenget er å bygge tillit gradvis – ikke erstatte erfaring over natten."
+
 ## Q: "Hva er konklusjonen i en setning?"
 **A**: "SARIMA-prognose kombinert med newsvendor-modell gir Skoringen Råholt et statistisk forankret beslutningsgrunnlag for sesongbestilling, med en forventet årlig effekt på +333 000 NOK (88 % sannsynlighet for positiv gevinst), drevet av bedre fordeling – ikke større volum – mellom vår og høst."
 
@@ -635,6 +665,24 @@ Vår: SARIMA(1,1,1)(1,1,1)$_{12}$
 - **FS2**: Prognose – hvilken modell er best? **SARIMA.**
 - **FS3**: Bestilling – hva er optimalt $Q^*$? **5 975 vår / 3 468 høst.**
 - **FS4**: Økonomi – hva er gevinsten? **+570k observert, +333k forventet.**
+
+## Tre overraskende funn
+
+1. **Flat profittkurve** – ±300 par fra Q* gir marginal profittendring (robust)
+2. **Høst ble nedjustert** – modellen sa "bestill mindre", ikke "bestill mer"
+3. **ETS tapte mot naiv** – uvanlig, men skyldes additiv form vs voksende sesong
+
+## Studiens tre bidrag
+
+1. **Metodisk**: reproduserbar PDF→CSV-pipeline for små bedrifter
+2. **Empirisk**: +14 % MAE-forbedring og +11,5 % nettoresultat i norsk skobutikk
+3. **Integrerende**: SARIMA + newsvendor + bullwhip i én hybrid beslutningsstøttemodell
+
+## Bærekraft
+
+- 463 par mindre overlager → ~5 800 kg CO₂ spart/år
+- FNs bærekraftsmål 12 – Ansvarlig forbruk og produksjon
+- Forutsetter at leverandøren faktisk produserer mindre
 
 ---
 
