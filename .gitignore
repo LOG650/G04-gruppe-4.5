@@ -22,3 +22,7 @@ Thumbs.db
 # Build artefakter / mellomfiler for rapport-bygging
 014_report/_preview/
 
+# Privat intern guide — skal IKKE pushes til GitHub
+015_eksamensforberedelse/
+
+
